@@ -454,12 +454,34 @@
             document.getElementById('m-cat-name').value = ''; document.getElementById('m-sub-list').value = '';
         }
 
+        // --- PERBAIKAN LOGIKA HAPUS KATEGORI ---
         function deleteCurrentCategory() {
             const cat = document.getElementById('cat').value;
-            if(!cat || !confirm(`Hapus kategori "${cat}"? Semua item didalamnya juga akan hilang.`)) return;
-            if(db.incomeCategories.includes(cat)) db.incomeCategories = db.incomeCategories.filter(x => x !== cat);
-            else { for(let g in db.customCategories) db.customCategories[g] = db.customCategories[g].filter(x => x !== cat); }
-            delete db.subCategories[cat]; save(); updateCategoryOptions();
+            if(!cat) return alert("Pilih kategori yang ingin dihapus terlebih dahulu!");
+            
+            if(!confirm(`Hapus kategori "${cat}"? Semua sub-item didalamnya juga akan hilang.`)) return;
+            
+            // 1. Cek dan hapus jika merupakan kategori Pemasukan
+            if(db.incomeCategories.includes(cat)) {
+                db.incomeCategories = db.incomeCategories.filter(x => x !== cat);
+            } else { 
+                // 2. Cek dan hapus dari grup alokasi Pengeluaran (Kebutuhan, Keinginan, Investasi)
+                for(let g in db.customCategories) { 
+                    if(db.customCategories[g].includes(cat)) {
+                        db.customCategories[g] = db.customCategories[g].filter(x => x !== cat);
+                    }
+                } 
+            }
+            
+            // 3. Hapus relasi sub-item dari database
+            if(db.subCategories[cat]) {
+                delete db.subCategories[cat]; 
+            }
+            
+            // 4. Simpan perubahan ke database & cloud, lalu render ulang dropdown pilihan
+            save(); 
+            updateCategoryOptions();
+            alert(`Kategori "${cat}" berhasil dihapus.`);
         }
 
         function updateCategoryOptions() {
