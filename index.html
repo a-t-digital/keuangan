@@ -5,15 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SakuMind</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
     <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: { extend: { fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] } } }
-        }
+        window.addEventListener('DOMContentLoaded', () => {
+            if (typeof tailwind !== 'undefined') {
+                tailwind.config = {
+                    darkMode: 'class',
+                    theme: { extend: { fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] } } }
+                }
+            }
+        });
     </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;500;600;700&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.3s; }
         .tab-active { border-bottom: 2px solid #2563eb; color: #2563eb; font-weight: 700; }
         .hide-scroll::-webkit-scrollbar { display: none; }
@@ -248,6 +251,7 @@
         </main>
     </div>
 
+    <script src="https://unpkg.com/lucide@latest"></script>
     <script>
         const KEY = 'SakuMind';
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzN6Btls1ah2gQnFoa6zecfYsdQGifJrJzwvEiT2UAs-zI3DQFUbTyNuyvWaWO7x-8ZqQ/exec';
@@ -265,7 +269,7 @@
         let currentAuthMode = 'login';
 
         window.addEventListener('DOMContentLoaded', () => {
-            lucide.createIcons();
+            if (typeof lucide !== 'undefined') lucide.createIcons();
             updateCategoryOptions();
             updateUI();
             applyTheme();
@@ -426,7 +430,6 @@
                 let exp = db.txs.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
                 document.getElementById('totalBalance').innerText = `Rp ${(inc-exp).toLocaleString('id-ID')}`;
                 
-                // Kalkulasi total hutang berjalan dengan memperhitungkan struktur pembayaran baru/lama
                 let debtTotal = db.debts.reduce((sum, d) => sum + (d.amount - (d.payments ? d.payments.reduce((s,p)=>s+p.amount,0) : 0)), 0);
                 document.getElementById('totalDebt').innerText = `Rp ${debtTotal.toLocaleString('id-ID')}`;
                 
@@ -434,7 +437,7 @@
                 if((inc-exp) < 0) { label.innerText = "Kas Defisit!"; label.className = "text-[10px] font-bold text-red-300"; }
                 else { label.innerText = "Arus Kas Aman"; label.className = "text-[10px] font-bold text-green-300"; }
             } else { auth.classList.remove('hidden'); app.classList.add('hidden'); sidebar.classList.remove('open'); overlay.classList.remove('show'); setAuthMode('login'); }
-            lucide.createIcons();
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
         function toggleSidebar() { if (!db.profile.isLoggedIn) return; document.getElementById('sidebar').classList.toggle('open'); document.getElementById('overlay').classList.toggle('show'); }
@@ -548,14 +551,13 @@
                     const isEx = t.type === 'expense';
                     cont.innerHTML += `<div class="bg-white dark:bg-slate-800 p-4 rounded-3xl border border-slate-50 dark:border-slate-700 flex justify-between items-center shadow-sm"><div><span class="text-[9px] px-2 py-0.5 rounded-full font-bold uppercase ${isEx?'bg-red-50 text-red-600':'bg-green-50 text-green-600'}">${t.category}</span><h4 class="font-bold text-sm dark:text-white mt-1">${t.subcat}</h4><p class="text-[10px] text-slate-400">${t.date}</p></div><div class="flex items-center gap-3"><span class="font-bold text-sm ${isEx?'text-red-500':'text-green-500'}">${isEx?'-':'+'} Rp ${t.amount.toLocaleString()}</span><button onclick="db.txs=db.txs.filter(x=>x.id!==${t.id});save();renderHistory();updateUI()" class="text-red-300"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></div>`;
                 }
-            }); lucide.createIcons();
+            }); if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
-        // --- TABUNGAN IMPIAN (BERSTRUKTUR RIWAYAT CICILAN) ---
+        // --- TABUNGAN IMPIAN ---
         function addGoal() { 
             const n = document.getElementById('gName').value, t = parseInt(document.getElementById('gTarget').value.replace(/\D/g, '')); 
             if(n && t > 0) { 
-                // targetHistory digunakan untuk menampung setiap list setoran berstruktur tanggal
                 db.goals.push({ id: Date.now(), name: n, target: t, saved: 0, targetHistory: [] }); 
                 save(); 
                 renderGoals(); 
@@ -570,9 +572,7 @@
                 let g = db.goals.find(x => x.id === id);
                 if(!g.targetHistory) g.targetHistory = [];
                 
-                // Menambahkan data ke array riwayat setoran terpisah
                 g.targetHistory.push({ id: Date.now(), amount: v, date: new Date().toLocaleDateString('id-ID') });
-                // Mengalkulasi akumulasi nilai g.saved dari targetHistory
                 g.saved = g.targetHistory.reduce((s, p) => s + p.amount, 0);
                 
                 save(); 
@@ -585,11 +585,10 @@
             let h = g.targetHistory.find(x => x.id === historyId);
             let newAmt = prompt("Edit Nominal Setoran (Rp):", h.amount);
             
-            if (newAmt === null) return; // Batal
+            if (newAmt === null) return; 
             let parsedAmt = parseInt(newAmt.replace(/\D/g, ''));
             
             if (!parsedAmt || parsedAmt <= 0) {
-                // Sesuai Aturan Ketiga: Hapus jika diisi 0 atau kosong
                 g.targetHistory = g.targetHistory.filter(x => x.id !== historyId);
             } else {
                 h.amount = parsedAmt;
@@ -603,7 +602,6 @@
         function renderGoals() {
             const c = document.getElementById('goalCards'); c.innerHTML = '';
             db.goals.forEach(g => {
-                // Normalisasi struktur lama ke struktur ber-array riwayat cicilan baru
                 if(!g.targetHistory) {
                     g.targetHistory = g.saved > 0 ? [{ id: Date.now(), amount: g.saved, date: 'Saldo Awal' }] : [];
                 }
@@ -612,7 +610,6 @@
 
                 let p = Math.min((g.saved / g.target) * 100, 100);
                 
-                // Membangun daftar tampilan baris riwayat setoran beserta tombol pensil (✏️) per barisnya
                 let historyHtml = g.targetHistory.map(h => `
                     <div class="flex justify-between items-center text-[10px] text-slate-500 border-b border-slate-50 dark:border-slate-700 py-1">
                         <span>${h.date}</span>
@@ -652,7 +649,7 @@
             });
         }
 
-        // --- HUTANG PIUTANG (DENGAN REVISI PENSIL EDIT PER BARIS) ---
+        // --- HUTANG PIUTANG ---
         function addDebt() {
             const p = document.getElementById('dPerson').value, a = parseInt(document.getElementById('dAmt').value.replace(/\D/g, '')), t = document.getElementById('dType').value;
             if(p && a > 0) { 
@@ -670,17 +667,15 @@
             let p = d.payments.find(x => x.id === paymentId);
             let newAmt = prompt("Edit Nominal Pembayaran Cicilan (Rp):", p.amount);
             
-            if (newAmt === null) return; // Batal
+            if (newAmt === null) return; 
             let parsedAmt = parseInt(newAmt.replace(/\D/g, ''));
             
             if (!parsedAmt || parsedAmt <= 0) {
-                // Sesuai Aturan Ketiga: Hapus dari daftar jika diisi 0 atau kosong
                 d.payments = d.payments.filter(x => x.id !== paymentId);
             } else {
                 p.amount = parsedAmt;
             }
             
-            // Cek status kelunasan ulang setelah proses edit selesai
             let totalPaid = d.payments.reduce((s, x) => s + x.amount, 0);
             if (totalPaid >= d.amount) {
                 if (confirm('Cicilan hutang telah lunas! Hapus catatan ini dari daftar utama?')) {
@@ -700,7 +695,6 @@
                 let paid = d.payments.reduce((s, p) => s + p.amount, 0);
                 let remaining = d.amount - paid;
                 
-                // Membangun daftar tampilan riwayat bayar hutang beserta tombol pensil (✏️) per barisnya
                 let historyHtml = d.payments.map(p => `
                     <div class="flex justify-between items-center text-[10px] text-slate-500 border-b border-slate-50 dark:border-slate-700 py-1">
                         <span>${p.date}</span>
@@ -734,7 +728,7 @@
                         <button onclick="payDebtStep(${d.id})" class="bg-green-500 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg shadow-green-100 active:scale-95 transition-all">BAYAR</button>
                     </div>
                 </div>`;
-            }); lucide.createIcons();
+            }); if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
         function payDebtStep(id) {
@@ -743,7 +737,6 @@
                 let d = db.debts.find(x => x.id === id);
                 if(!d.payments) d.payments = [];
                 
-                // Menyisipkan id unik untuk pembayaran cicilan baru agar bisa diedit secara independen
                 d.payments.push({ id: Date.now(), amount: v, date: new Date().toLocaleDateString('id-ID') });
                 
                 let paid = d.payments.reduce((s, p) => s + p.amount, 0);
