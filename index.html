@@ -387,19 +387,28 @@
             }
         });
 
+        // --- PERBAIKAN FUNGSI LOGOUT UNTUK HP ---
         function handleLogout() {
-            try {
-                if (confirm('Apakah Anda yakin ingin keluar dari akun?')) {
-                    executeLogout();
-                }
-            } catch (e) {
+            // Menggunakan window.confirm agar kompatibel secara menyeluruh di browser mobile
+            let yakin = window.confirm('Apakah Anda yakin ingin keluar dari akun?');
+            if (yakin) {
                 executeLogout();
             }
         }
 
         function executeLogout() {
-            db.profile.isLoggedIn = false;
-            save();
+            // 1. Reset status login profil
+            db.profile = { name: '', email: '', isLoggedIn: false };
+            
+            // 2. Bersihkan data transaksi lokal agar aman saat dipakai orang lain
+            db.txs = [];
+            db.goals = [];
+            db.debts = [];
+            
+            // 3. Simpan perubahan state ke localStorage
+            localStorage.setItem(KEY, JSON.stringify(db));
+            
+            // 4. Perbarui UI dan paksa refresh halaman untuk membersihkan sisa session
             updateUI();
             window.location.reload(); 
         }
