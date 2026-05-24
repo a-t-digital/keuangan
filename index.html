@@ -398,7 +398,26 @@
             }
         });
 
-        function handleLogout() { if(confirm('Keluar?')) { db.profile.isLoggedIn = false; save(); updateUI(); } }
+        function handleLogout() {
+    // Menggunakan dialog konfirmasi bawaan, jika diblokir oleh browser HP, akan langsung diarahkan keluar secara aman.
+    try {
+        if (confirm('Apakah Anda yakin ingin keluar dari akun?')) {
+            executeLogout();
+        }
+    } catch (e) {
+        // Fallback jika browser HP memblokir fungsi confirm()
+        executeLogout();
+    }
+}
+
+function executeLogout() {
+    db.profile.isLoggedIn = false;
+    // Mengosongkan data sesi lokal agar kembali ke halaman login
+    save();
+    updateUI();
+    // Refresh halaman untuk memastikan state aplikasi bersih di HP
+    window.location.reload(); 
+}
 
         function updateUI() {
             const auth = document.getElementById('auth-page'), app = document.getElementById('main-app'), sidebar = document.getElementById('sidebar'), overlay = document.getElementById('overlay');
