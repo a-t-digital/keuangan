@@ -78,7 +78,7 @@
                 </button>
             </form>
             <div class="text-center pt-4 border-t dark:border-slate-700">
-                <p class="text class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">
+                <p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">
                     <span id="switchPrompt">Belum punya akun?</span>
                     <button type="button" onclick="toggleAuthMode()" id="switchAuthBtn" class="text-blue-600 underline">Daftar sekarang</button>
                 </p>
@@ -93,7 +93,7 @@
             <button onclick="toggleSidebar()"><i data-lucide="x" class="text-slate-500"></i></button>
         </div>
         <div class="space-y-6">
-            <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-3xl border border-blue-100 dark:border-blue-800">
+            <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-3xl border border-blue-100 dark:border-blue-800 relative z-[60]">
                 <div class="flex items-center gap-4 mb-4">
                     <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white font-bold"><i data-lucide="user"></i></div>
                     <div class="flex-1 min-w-0">
@@ -101,8 +101,8 @@
                         <p id="side-email" class="text-[10px] text-slate-400 truncate font-medium">Email terhubung</p>
                     </div>
                 </div>
-                <button onclick="handleLogout()" class="w-full bg-red-100 text-red-600 text-[10px] font-bold py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-red-200">
-                    <i data-lucide="log-out" class="w-3.5 h-3.5"></i><span>Keluar Akun</span>
+                <button type="button" onclick="handleLogout()" class="w-full bg-red-100 text-red-600 text-[11px] font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 active:bg-red-200 relative z-[100] pointer-events-auto" style="cursor: pointer; -webkit-tap-highlight-color: transparent;">
+                    <i data-lucide="log-out" class="w-4 h-4"></i><span>Keluar Akun</span>
                 </button>
             </div>
             <div class="space-y-4 px-2">
@@ -140,7 +140,7 @@
                     <p class="text-[8px] uppercase font-bold text-blue-100 mb-1">Hutang Aktif</p>
                     <p id="totalDebt" class="font-bold text-sm text-center">Rp 0</p>
                 </div>
-                <div id="budgetStatus" class="bg-white/10 p-3 rounded-2xl border border-white/5 backdrop-blur-sm overflow-hidden text-center text-center">
+                <div id="budgetStatus" class="bg-white/10 p-3 rounded-2xl border border-white/5 backdrop-blur-sm overflow-hidden text-center">
                     <p class="text-[8px] uppercase font-bold text-blue-100 mb-1 text-center">Notifikasi Kas</p>
                     <p id="st-label" class="text-[10px] font-bold truncate text-center">Aman</p>
                 </div>
@@ -387,28 +387,31 @@
             }
         });
 
-        // --- PERBAIKAN FUNGSI LOGOUT UNTUK HP ---
+        // --- FIX LOGOUT UNTUK MOBILE HP ---
         function handleLogout() {
-            // Menggunakan window.confirm agar kompatibel secara menyeluruh di browser mobile
-            let yakin = window.confirm('Apakah Anda yakin ingin keluar dari akun?');
-            if (yakin) {
-                executeLogout();
-            }
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            if (sidebar) sidebar.classList.remove('open');
+            if (overlay) overlay.classList.remove('show');
+
+            setTimeout(() => {
+                let yakin = window.confirm('Apakah Anda yakin ingin keluar dari akun SakuMind?');
+                if (yakin) {
+                    executeLogout();
+                } else {
+                    if (sidebar && db.profile.isLoggedIn) sidebar.classList.add('open');
+                    if (overlay && db.profile.isLoggedIn) overlay.classList.add('show');
+                }
+            }, 150);
         }
 
         function executeLogout() {
-            // 1. Reset status login profil
             db.profile = { name: '', email: '', isLoggedIn: false };
-            
-            // 2. Bersihkan data transaksi lokal agar aman saat dipakai orang lain
             db.txs = [];
             db.goals = [];
             db.debts = [];
             
-            // 3. Simpan perubahan state ke localStorage
             localStorage.setItem(KEY, JSON.stringify(db));
-            
-            // 4. Perbarui UI dan paksa refresh halaman untuk membersihkan sisa session
             updateUI();
             window.location.reload(); 
         }
@@ -454,18 +457,17 @@
             document.getElementById('m-cat-name').value = ''; document.getElementById('m-sub-list').value = '';
         }
 
-        // --- PERBAIKAN LOGIKA HAPUS KATEGORI ---
+        // --- FIX LOGIKA HAPUS KATEGORI DI HP (WEBVIEW COMPATIBLE) ---
         function deleteCurrentCategory() {
             const cat = document.getElementById('cat').value;
             if(!cat) return alert("Pilih kategori yang ingin dihapus terlebih dahulu!");
             
-            if(!confirm(`Hapus kategori "${cat}"? Semua sub-item didalamnya juga akan hilang.`)) return;
+            let yakin = window.confirm(`Hapus kategori "${cat}"? Semua item didalamnya juga akan hilang.`);
+            if(!yakin) return;
             
-            // 1. Cek dan hapus jika merupakan kategori Pemasukan
             if(db.incomeCategories.includes(cat)) {
                 db.incomeCategories = db.incomeCategories.filter(x => x !== cat);
             } else { 
-                // 2. Cek dan hapus dari grup alokasi Pengeluaran (Kebutuhan, Keinginan, Investasi)
                 for(let g in db.customCategories) { 
                     if(db.customCategories[g].includes(cat)) {
                         db.customCategories[g] = db.customCategories[g].filter(x => x !== cat);
@@ -473,12 +475,10 @@
                 } 
             }
             
-            // 3. Hapus relasi sub-item dari database
             if(db.subCategories[cat]) {
                 delete db.subCategories[cat]; 
             }
             
-            // 4. Simpan perubahan ke database & cloud, lalu render ulang dropdown pilihan
             save(); 
             updateCategoryOptions();
             alert(`Kategori "${cat}" berhasil dihapus.`);
@@ -548,99 +548,23 @@
                 }
             }); lucide.createIcons();
         }
-        
-        // --- FITUR TABUNGAN (GOALS) ---
         function addGoal() { 
             const n = document.getElementById('gName').value, t = parseInt(document.getElementById('gTarget').value.replace(/\D/g, '')); 
             if(n && t > 0) { 
-                db.goals.push({ id: Date.now(), name: n, target: t, saved: 0, targetHistory: [] }); 
+                db.goals.push({ id: Date.now(), name: n, target: t, saved: 0 }); 
                 save(); 
                 renderGoals(); 
                 document.getElementById('gName').value=''; 
                 document.getElementById('gTarget').value=''; 
             } 
         }
-
-        function saveToGoal(id) { 
-            let v = parseInt((prompt("Masukkan nominal tabungan baru yang ingin ditambahkan:") || "").replace(/\D/g, '')); 
-            if(v > 0) { 
-                let g = db.goals.find(x => x.id === id);
-                if(!g.targetHistory) g.targetHistory = [];
-                g.targetHistory.push({ amount: v, date: new Date().toLocaleDateString('id-ID') });
-                g.saved = g.targetHistory.reduce((s, p) => s + p.amount, 0);
-                save(); 
-                renderGoals(); 
-                updateUI();
-            } 
-        }
-
-        function editGoalSinglePayment(goalId, payIndex) {
-            let g = db.goals.find(x => x.id === goalId);
-            let currentAmt = g.targetHistory[payIndex].amount;
-            let newAmt = prompt(`Ubah nominal tabungan (Sebelumnya Rp ${currentAmt.toLocaleString('id-ID')}):`, currentAmt);
-            
-            if(newAmt !== null) {
-                let parsed = parseInt(newAmt.replace(/\D/g, ''));
-                if(parsed === 0 || isNaN(parsed)) {
-                    g.targetHistory.splice(payIndex, 1);
-                } else {
-                    g.targetHistory[payIndex].amount = parsed;
-                }
-                g.saved = g.targetHistory.reduce((s, p) => s + p.amount, 0);
-                save(); renderGoals(); updateUI();
-            }
-        }
-
-        function editGoal(id) {
-            let g = db.goals.find(x => x.id === id);
-            let n = prompt("Edit Nama Impian:", g.name);
-            let t = prompt("Edit Target Dana (Rp):", g.target);
-            if(n) g.name = n;
-            if(t) g.target = parseInt(t.replace(/\D/g, ''));
-            save(); renderGoals(); updateUI();
-        }
-
+        function saveToGoal(id) { let v = parseInt((prompt("Nominal tabungan:") || "").replace(/\D/g, '')); if(v > 0) { db.goals.find(g => g.id === id).saved += v; save(); renderGoals(); } }
         function renderGoals() {
             const c = document.getElementById('goalCards'); c.innerHTML = '';
-            db.goals.forEach(g => { 
-                let p = Math.min((g.saved/g.target)*100, 100); 
-                let historyHtml = (g.targetHistory || []).map((pay, idx) => `
-                    <div class="flex justify-between items-center text-[10px] text-slate-500 border-b border-slate-50 dark:border-slate-700 py-1">
-                        <span>${pay.date}</span>
-                        <div class="flex items-center gap-1.5">
-                            <span class="font-bold text-blue-600">Rp ${pay.amount.toLocaleString('id-ID')}</span>
-                            <button onclick="editGoalSinglePayment(${g.id}, ${idx})" class="text-slate-400 hover:text-blue-500 text-[9px]">✏️</button>
-                        </div>
-                    </div>
-                `).join('');
-
-                c.innerHTML += `<div class="bg-white dark:bg-slate-800 p-4 rounded-3xl border dark:border-slate-700 shadow-sm space-y-3 text-slate-800">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h4 class="font-bold text-sm dark:text-white">${g.name}</h4>
-                            <p class="text-xs font-bold text-slate-400">Terakumulasi: Rp ${g.saved.toLocaleString('id-ID')}/${g.target.toLocaleString('id-ID')}</p>
-                        </div>
-                        <div class="flex gap-1 items-center">
-                            <button onclick="editGoal(${g.id})" class="p-1 text-slate-400 hover:text-blue-500"><i data-lucide="edit-2" class="w-3.5 h-3.5"></i></button>
-                            <button onclick="saveToGoal(${g.id})" class="bg-blue-50 text-blue-600 px-2.5 py-1 rounded-xl text-[9px] font-bold uppercase">+ TABUNG</button>
-                            <button onclick="if(confirm('Hapus impian tabungan ini?')){db.goals=db.goals.filter(x=>x.id!==${g.id});save();renderGoals();updateUI();}" class="text-red-300 p-1 hover:text-red-500">X</button>
-                        </div>
-                    </div>
-
-                    <div class="bg-slate-50 dark:bg-slate-900/50 p-2.5 rounded-2xl space-y-0.5">
-                        <p class="text-[9px] font-bold text-slate-400 uppercase mb-1">Riwayat Nabung</p>
-                        ${historyHtml || '<p class="text-[10px] text-slate-400 italic">Belum ada setoran</p>'}
-                    </div>
-
-                    <div class="w-full bg-slate-100 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
-                        <div class="bg-blue-600 h-full" style="width:${p}%"></div>
-                    </div>
-                </div>`; 
-            });
-            lucide.createIcons();
+            db.goals.forEach(g => { let p = Math.min((g.saved/g.target)*100, 100); c.innerHTML += `<div class="bg-white dark:bg-slate-800 p-4 rounded-3xl border dark:border-slate-700 shadow-sm space-y-3 text-slate-800"><div class="flex justify-between"><div><h4 class="font-bold text-sm dark:text-white">${g.name}</h4><p class="text-xs font-bold text-slate-400">Rp ${g.saved.toLocaleString()}/${g.target.toLocaleString()}</p></div><div class="flex gap-2"><button onclick="saveToGoal(${g.id})" class="bg-blue-50 text-blue-600 px-3 py-1 rounded-xl text-[10px] font-bold">+ ISI</button><button onclick="db.goals=db.goals.filter(x=>x.id!==${g.id});save();renderGoals()" class="text-red-300">X</button></div></div><div class="w-full bg-slate-100 dark:bg-slate-700 h-2 rounded-full overflow-hidden"><div class="bg-blue-600 h-full" style="width:${p}%"></div></div></div>`; });
         }
 
-        // --- HUTANG PIUTANG (DEBTS) ---
+        // --- HUTANG PIUTANG ---
         function addDebt() {
             const p = document.getElementById('dPerson').value, a = parseInt(document.getElementById('dAmt').value.replace(/\D/g, '')), t = document.getElementById('dType').value;
             if(p && a > 0) { 
@@ -658,15 +582,7 @@
             db.debts.forEach(d => {
                 let paid = (d.payments || []).reduce((s, p) => s + p.amount, 0);
                 let remaining = d.amount - paid;
-                let historyHtml = (d.payments || []).map((p, index) => `
-                    <div class="flex justify-between items-center text-[10px] text-slate-500 border-b border-slate-50 dark:border-slate-700 py-1.5">
-                        <span>${p.date}</span>
-                        <div class="flex items-center gap-2">
-                            <span class="font-bold text-green-600">Rp ${p.amount.toLocaleString('id-ID')}</span>
-                            <button onclick="editSinglePayment(${d.id}, ${index})" class="text-slate-400 hover:text-blue-500 text-[9px]">✏️</button>
-                        </div>
-                    </div>
-                `).join('');
+                let historyHtml = (d.payments || []).map(p => `<div class="flex justify-between text-[10px] text-slate-500 border-b border-slate-50 dark:border-slate-700 py-1"><span>${p.date}</span><span class="font-bold text-green-600">Rp ${p.amount.toLocaleString()}</span></div>`).join('');
 
                 c.innerHTML += `<div class="bg-white dark:bg-slate-800 p-5 rounded-3xl border dark:border-slate-700 shadow-sm space-y-4">
                     <div class="flex justify-between items-start">
@@ -700,33 +616,10 @@
                 let d = db.debts.find(x => x.id === id);
                 if(!d.payments) d.payments = [];
                 d.payments.push({ amount: v, date: new Date().toLocaleDateString('id-ID') });
-                checkDebtStatus(id);
+                let paid = d.payments.reduce((s, p) => s + p.amount, 0);
+                if(paid >= d.amount) { if(confirm('Hutang sudah lunas! Hapus dari daftar?')) db.debts = db.debts.filter(x => x.id !== id); }
+                save(); renderDebts(); updateUI();
             }
-        }
-
-        function editSinglePayment(debtId, paymentIndex) {
-            let d = db.debts.find(x => x.id === debtId);
-            let currentAmt = d.payments[paymentIndex].amount;
-            let newAmt = prompt(`Ubah nominal bayar (sebelumnya Rp ${currentAmt.toLocaleString('id-ID')}):`, currentAmt);
-            
-            if (newAmt !== null) {
-                let parsed = parseInt(newAmt.replace(/\D/g, ''));
-                if (parsed === 0 || isNaN(parsed)) {
-                    d.payments.splice(paymentIndex, 1);
-                } else {
-                    d.payments[paymentIndex].amount = parsed;
-                }
-                checkDebtStatus(debtId);
-            }
-        }
-
-        function checkDebtStatus(id) {
-            let d = db.debts.find(x => x.id === id);
-            let paid = d.payments.reduce((s, p) => s + p.amount, 0);
-            if(paid >= d.amount) { 
-                if(confirm('Hutang sudah lunas! Hapus dari daftar?')) db.debts = db.debts.filter(x => x.id !== id); 
-            }
-            save(); renderDebts(); updateUI();
         }
 
         function editDebt(id) {
@@ -737,7 +630,7 @@
             if(a) d.amount = parseInt(a.replace(/\D/g, ''));
             save(); renderDebts(); updateUI();
         }
-        function deleteDebt(id) { if(confirm('Hapus catatan ini?')) { db.debts = db.debts.filter(x => x.id !== id); save(); renderDebts(); updateUI(); } }
+        function deleteDebt(id) { if(confirm('Hutang catatan ini?')) { db.debts = db.debts.filter(x => x.id !== id); save(); renderDebts(); updateUI(); } }
 
         function clearAllData() { if(confirm('Reset Database?')) { localStorage.clear(); location.reload(); } }
     </script>
