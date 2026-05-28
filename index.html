@@ -324,7 +324,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
         const KEY = 'SakuMind';
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw-jlZf76a-z3jztdtlD5bHPTKZpmHBJnh7rZjCgWlJ79BPSQ1O-qqLmfIvgZhV0y-Y8A/exec';
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwL4ASUhE7y4sXFxK6t0BwUJztZ7N7QeQPtur5rulksSExDYx9KtPJM3xTXQvk-euXSmA/exec';
         
         let db = JSON.parse(localStorage.getItem(KEY)) || {
             txs: [], goals: [], debts: [],
@@ -351,7 +351,6 @@
                     this.value = v ? new Intl.NumberFormat('id-ID').format(v) : '';
                 });
             };
-            // Format input di-update untuk mendukung modal tabungan dan hutang
             ['amt', 'gTarget', 'dAmt', 'dtl-amt', 'dtl-goal-amt', 'dtl-debt-amt'].forEach(formatInp);
         });
 
@@ -370,6 +369,9 @@
                 params.append('txs', JSON.stringify(db.txs));
                 params.append('goals', JSON.stringify(db.goals));
                 params.append('debts', JSON.stringify(db.debts));
+                params.append('customCategories', JSON.stringify(db.customCategories));
+                params.append('incomeCategories', JSON.stringify(db.incomeCategories));
+                params.append('subCategories', JSON.stringify(db.subCategories));
 
                 await fetch(APPS_SCRIPT_URL, { 
                     method: 'POST', 
@@ -439,10 +441,14 @@
                             db.txs = result.data.txs || [];
                             db.goals = result.data.goals || [];
                             db.debts = result.data.debts || [];
+                            if (result.data.customCategories && Object.keys(result.data.customCategories).length > 0) db.customCategories = result.data.customCategories;
+                            if (result.data.incomeCategories && result.data.incomeCategories.length > 0) db.incomeCategories = result.data.incomeCategories;
+                            if (result.data.subCategories && Object.keys(result.data.subCategories).length > 0) db.subCategories = result.data.subCategories;
                         }
                         
                         localStorage.setItem(KEY, JSON.stringify(db));
                         document.getElementById('authForm').reset();
+                        updateCategoryOptions();
                         updateUI();
                         switchTab('input');
                     } else {
@@ -689,7 +695,7 @@
                             <p class="text-xs font-bold text-slate-400">Target: Rp ${g.target.toLocaleString('id-ID')}</p>
                         </div>
                         <div class="flex gap-2">
-                            <button onclick="saveToGoal(${g.id})" class="bg-blue-50 text-blue-600 px-3 py-1.5 rounded-xl text-[10px] font-bold tracking-wider uppercase">+ ISI</button>
+                            <button onclick="saveToGoal(${g.id})" class="bg-blue-50 text-blue-600 px-3 py-1.5 rounded-xl text-[10px] font-bold tracking-wider uppercase">+ Tambah</button>
                             <button onclick="if(confirm('Hapus impian ini?')) { db.goals=db.goals.filter(x=>x.id!=${g.id});save();renderGoals(); }" class="text-red-300 font-bold p-1">X</button>
                         </div>
                     </div>
@@ -791,9 +797,7 @@
         }
         function deleteDebt(id) { if(confirm('Hapus catatan ini?')) { db.debts = db.debts.filter(x => x.id !== id); save(); renderDebts(); updateUI(); } }
 
-        function clearAllData() { if(confirm('Reset Database?')) { localStorage.clear(); location.reload(); } }
-
-        // --- LOGIKA RINCIAN TRANSAKSI UTAMA ---
+        // --- SISTEM RINCIAN MODAL DETAIL TRANSAKSI UTAMA ---
         let currentDetailId = null;
 
         function openTxDetail(id) {
@@ -837,7 +841,7 @@
             }
         }
 
-        // --- LOGIKA RINCIAN SETORAN TABUNGAN ---
+        // --- DETIL SETORAN TABUNGAN IMPIAN ---
         let currentGoalId = null;
         let currentGoalHistoryId = null;
 
@@ -893,7 +897,7 @@
             }
         }
 
-        // --- LOGIKA RINCIAN CICILAN HUTANG ---
+        // --- DETIL CICILAN HUTANG PIUTANG ---
         let currentDebtId = null;
         let currentDebtPaymentId = null;
 
@@ -954,6 +958,8 @@
                 }
             }
         }
+
+        function clearAllData() { if(confirm('Reset Database?')) { localStorage.clear(); location.reload(); } }
     </script>
 </body>
 </html>
