@@ -368,7 +368,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
         const KEY = 'SakuMind';
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyKVF8CkFZKRgXceb8EgtHQbHZaqX59Yn4SiokDPoJTzqGop1VSGQ8pUYQgjDR4H_PrBw/exec';
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwDFxWAuKosfuqTE9jxzqBJkHG1BCPnQcReyPzSurfNyoHV3x32UCLcN0nFP3njS0vZHg/exec';
         
         let db = JSON.parse(localStorage.getItem(KEY)) || {
             txs: [], goals: [], debts: [],
@@ -405,30 +405,39 @@
             }
         }
 
-        // FUNGSI BACKUP HANYA MENGIRIM KATEGORI KUSTOM KE CLOUD (DATA TRANSAKSI TETAP DI HP)
+        // FUNGSI UTAMA SINKRONISASI DATA PENUH KE SPREADSHEET (MENGGUNAKAN RAW POST JSON PAYLOAD)
         async function syncToCloud() {
-            try {
-                const params = new URLSearchParams();
-                params.append('action', 'sync');
-                params.append('email', db.profile.email);
-                // Server spreadsheet mengabaikan parameter ini, dikirim kosong demi kecocokan parameter
-                params.append('txs', JSON.stringify([]));
-                params.append('goals', JSON.stringify([]));
-                params.append('debts', JSON.stringify([]));
-                // Struktur kategori yang tetap dicadangkan secara aman
-                params.append('customCategories', JSON.stringify(db.customCategories));
-                params.append('incomeCategories', JSON.stringify(db.incomeCategories));
-                params.append('subCategories', JSON.stringify(db.subCategories));
+            if (!db.profile || !db.profile.isLoggedIn || !db.profile.email) return;
 
-                await fetch(APPS_SCRIPT_URL, { 
+            try {
+                // Menyusun payload data murni sesuai struktur penangkapan doPost Apps Script
+                const payload = {
+                    action: "sync",
+                    email: db.profile.email,
+                    txs: JSON.stringify(db.txs || []),
+                    goals: JSON.stringify(db.goals || []),
+                    debts: JSON.stringify(db.debts || []),
+                    customCategories: typeof db.customCategories === 'string' ? db.customCategories : JSON.stringify(db.customCategories || {}),
+                    incomeCategories: typeof db.incomeCategories === 'string' ? db.incomeCategories : JSON.stringify(db.incomeCategories || []),
+                    subCategories: typeof db.subCategories === 'string' ? db.subCategories : JSON.stringify(db.subCategories || {})
+                };
+
+                // Mengirim string murni dengan format text/plain agar bebas CORS dan langsung masuk ke e.postData.contents
+                const response = await fetch(APPS_SCRIPT_URL, { 
                     method: 'POST', 
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: params
+                    mode: 'cors',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(payload)
                 });
-                console.log("Pengaturan Kategori berhasil dicadangkan ke cloud.");
+                
+                const resData = await response.json();
+                if (resData.status === "success") {
+                    console.log("Sinkronisasi database awan berhasil:", resData.message);
+                } else {
+                    console.error("Gagal sinkronisasi cloud:", resData.message);
+                }
             } catch (e) {
-                console.error("Gagal backup otomatis ke cloud:", e);
+                console.error("Gagal interkoneksi sinkronisasi otomatis ke cloud:", e);
             }
         }
 
@@ -483,15 +492,16 @@
                     if (currentAuthMode === 'login') {
                         db.profile = { name: result.user.name, email: result.user.email, pass: password, isLoggedIn: true };
                         
-                        // HANYA ambil Kategori Kustom dari Cloud jika tersedia. 
-                        // Data utama transaksi (txs, goals, debts) tetap dipertahankan dari database lokal saat ini.
+                        // Menarik data cadangan penuh (Transaksi, Impian, Hutang, Kategori) dari Spreadsheet Cloud saat login berhasil
                         if (result.data) {
+                            if (result.data.txs && result.data.txs.length > 0) db.txs = result.data.txs;
+                            if (result.data.goals && result.data.goals.length > 0) db.goals = result.data.goals;
+                            if (result.data.debts && result.data.debts.length > 0) db.debts = result.data.debts;
                             if (result.data.customCategories && Object.keys(result.data.customCategories).length > 0) db.customCategories = result.data.customCategories;
                             if (result.data.incomeCategories && result.data.incomeCategories.length > 0) db.incomeCategories = result.data.incomeCategories;
                             if (result.data.subCategories && Object.keys(result.data.subCategories).length > 0) db.subCategories = result.data.subCategories;
                         }
                         
-                        // Menjamin array lokal tidak rusak atau hilang saat proses sinkronisasi masuk akun
                         if (!db.txs) db.txs = [];
                         if (!db.goals) db.goals = [];
                         if (!db.debts) db.debts = [];
@@ -501,7 +511,7 @@
                         updateCategoryOptions();
                         updateUI();
                         switchTab('input');
-                        alert("Login Berhasil! Sesi lokal diaktifkan (Data Transaksi aman di HP ini).");
+                        alert("Login Berhasil! Sesi cloud & lokal aktif terhubung (Seluruh data disinkronisasi otomatis).");
                     } else {
                         alert(result.message);
                         toggleAuthMode();
@@ -685,7 +695,6 @@
                 db.subCategories[oldCat] = subs;
             }
 
-            // Update riwayat transaksi lama agar datanya tetap terikat & tidak patah
             db.txs.forEach(t => {
                 if(t.type === currentType && t.category === oldCat) {
                     t.category = newName;
@@ -723,13 +732,23 @@
             updateCategoryOptions();
         }
 
-        // Helper untuk parse string tanggal DD/MM/YYYY ke bentuk Date Object JavaScript standar
         function parseLocalDateString(dateStr) {
             if(!dateStr) return null;
             const parts = dateStr.split('/');
             if(parts.length !== 3) return null;
             return new Date(parts[2], parts[1] - 1, parts[0]);
         }
+
+        document.getElementById('txForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const amt = parseInt(document.getElementById('amt').value.replace(/\D/g, ''));
+            const cat = document.getElementById('cat').value;
+            if(!amt) return alert("Masukkan nominal!");
+            let g = 'Pemasukan';
+            if(currentType === 'expense') { for(let k in db.customCategories) if(db.customCategories[k].includes(cat)) g = k; }
+            db.txs.push({ id: Date.now(), type: currentType, amount: amt, group: g, category: cat, subcat: document.getElementById('subcat').value, date: new Date().toLocaleDateString('id-ID') });
+            save(); updateUI(); document.getElementById('txForm').reset(); setType(currentType); alert('Berhasil!');
+        });
 
         document.getElementById('txForm').addEventListener('submit', (e) => {
             e.preventDefault();
@@ -884,7 +903,6 @@
             }); if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
-        // --- KONTROL MODAL MANAJEMEN IMPIAN UTAMA (EDIT & HAPUS) ---
         let currentManageGoalId = null;
         function openManageGoalModal(id) {
             const g = db.goals.find(x => x.id === id); if(!g) return;
@@ -985,7 +1003,6 @@
             }
         }
 
-        // --- EDIT DETAIL SETORAN CICILAN SATUAN ---
         function editDebt(id) {
             let d = db.debts.find(x => x.id === id);
             let n = prompt("Edit Nama Orang:", d.person);
@@ -1078,7 +1095,7 @@
         function clearAllData() { 
             if(confirm('Apakah Anda benar-benar ingin mereset seluruh database? Tindakan ini tidak bisa dibatalkan.')) {
                 let inputPass = prompt("Masukkan Kata Sandi akun Anda untuk mengonfirmasi reset:");
-                if (inputPass === null) return; // User membatalkan prompt
+                if (inputPass === null) return;
                 
                 if (inputPass === db.profile.pass) {
                     localStorage.clear(); 
