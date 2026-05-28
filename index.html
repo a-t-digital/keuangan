@@ -396,6 +396,11 @@
                 });
             };
             ['amt', 'gTarget', 'dAmt', 'dtl-amt', 'dtl-goal-amt', 'dtl-debt-amt', 'm-edit-goal-target'].forEach(formatInp);
+
+            // AUTO SYNC DARI CLOUD SAAT HALAMAN DIBUKA (JIKA SUDAH LOGIN)
+            if (db.profile && db.profile.isLoggedIn) {
+                fetchLatestFromCloud();
+            }
         });
 
         function save() { 
@@ -410,7 +415,6 @@
             if (!db.profile || !db.profile.isLoggedIn || !db.profile.email) return;
 
             try {
-                // Menyusun payload data murni sesuai struktur penangkapan doPost Apps Script
                 const payload = {
                     action: "sync",
                     email: db.profile.email,
@@ -422,7 +426,6 @@
                     subCategories: typeof db.subCategories === 'string' ? db.subCategories : JSON.stringify(db.subCategories || {})
                 };
 
-                // Mengirim string murni dengan format text/plain agar bebas CORS dan langsung masuk ke e.postData.contents
                 const response = await fetch(APPS_SCRIPT_URL, { 
                     method: 'POST', 
                     mode: 'cors',
@@ -438,6 +441,38 @@
                 }
             } catch (e) {
                 console.error("Gagal interkoneksi sinkronisasi otomatis ke cloud:", e);
+            }
+        }
+
+        // FUNGSI UNTUK MENGAMBIL DATA TERBARU DARI CLOUD TANPA LOGOUT
+        async function fetchLatestFromCloud() {
+            if (!db.profile || !db.profile.isLoggedIn || !db.profile.email || !db.profile.pass) return;
+            console.log("Menyelaraskan data terbaru dari Cloud...");
+
+            const params = new URLSearchParams();
+            params.append('action', 'login');
+            params.append('email', db.profile.email);
+            params.append('password', db.profile.pass);
+
+            try {
+                const response = await fetch(`${APPS_SCRIPT_URL}?${params.toString()}`, { method: 'GET' });
+                const result = await response.json();
+
+                if (result.status === 'success' && result.data) {
+                    if (result.data.txs && result.data.txs.length > 0) db.txs = result.data.txs;
+                    if (result.data.goals && result.data.goals.length > 0) db.goals = result.data.goals;
+                    if (result.data.debts && result.data.debts.length > 0) db.debts = result.data.debts;
+                    if (result.data.customCategories && Object.keys(result.data.customCategories).length > 0) db.customCategories = result.data.customCategories;
+                    if (result.data.incomeCategories && result.data.incomeCategories.length > 0) db.incomeCategories = result.data.incomeCategories;
+                    if (result.data.subCategories && Object.keys(result.data.subCategories).length > 0) db.subCategories = result.data.subCategories;
+
+                    localStorage.setItem(KEY, JSON.stringify(db));
+                    updateCategoryOptions();
+                    updateUI();
+                    console.log("Sinkronisasi latar belakang berhasil!");
+                }
+            } catch (error) {
+                console.error("Gagal memuat data cloud di latar belakang:", error);
             }
         }
 
@@ -492,7 +527,6 @@
                     if (currentAuthMode === 'login') {
                         db.profile = { name: result.user.name, email: result.user.email, pass: password, isLoggedIn: true };
                         
-                        // Menarik data cadangan penuh (Transaksi, Impian, Hutang, Kategori) dari Spreadsheet Cloud saat login berhasil
                         if (result.data) {
                             if (result.data.txs && result.data.txs.length > 0) db.txs = result.data.txs;
                             if (result.data.goals && result.data.goals.length > 0) db.goals = result.data.goals;
@@ -583,7 +617,7 @@
 
         function toggleSidebar() { if (!db.profile.isLoggedIn) return; document.getElementById('sidebar').classList.toggle('open'); document.getElementById('overlay').classList.toggle('show'); }
 
-        // --- SISTEM UPDATE MODAL MANAJEMEN KATEGORI BARU (TAMBAH, HAPUS, EDIT) ---
+        // --- SISTEM UPDATE MODAL MANAJEMEN KATEGORI BARU ---
         function openManageCatModal() {
             const currentCat = document.getElementById('cat').value;
             const wrap = document.getElementById('m-edit-group-wrapper');
@@ -620,7 +654,6 @@
             document.getElementById('manage-cat-modal').classList.add('hidden'); 
         }
 
-        // AKSI TAMBAH
         function actionAddCategory() {
             const n = document.getElementById('m-edit-cat-name').value.trim();
             const sl = document.getElementById('m-edit-sub-list').value.trim();
@@ -641,7 +674,6 @@
             alert(`Kategori "${n}" berhasil ditambahkan!`);
         }
 
-        // AKSI HAPUS
         function actionDeleteCategory() {
             const targetCat = document.getElementById('cat').value;
             if(!targetCat) return alert("Pilih kategori yang ingin dihapus terlebih dahulu!");
@@ -664,7 +696,6 @@
             alert(`Kategori "${targetCat}" berhasil dihapus.`);
         }
 
-        // AKSI EDIT (SIMPAN)
         function actionSaveCategoryEdit() {
             const oldCat = document.getElementById('cat').value;
             if(!oldCat) return alert("Tidak ada kategori yang dipilih!");
@@ -738,17 +769,6 @@
             if(parts.length !== 3) return null;
             return new Date(parts[2], parts[1] - 1, parts[0]);
         }
-
-        document.getElementById('txForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const amt = parseInt(document.getElementById('amt').value.replace(/\D/g, ''));
-            const cat = document.getElementById('cat').value;
-            if(!amt) return alert("Masukkan nominal!");
-            let g = 'Pemasukan';
-            if(currentType === 'expense') { for(let k in db.customCategories) if(db.customCategories[k].includes(cat)) g = k; }
-            db.txs.push({ id: Date.now(), type: currentType, amount: amt, group: g, category: cat, subcat: document.getElementById('subcat').value, date: new Date().toLocaleDateString('id-ID') });
-            save(); updateUI(); document.getElementById('txForm').reset(); setType(currentType); alert('Berhasil!');
-        });
 
         document.getElementById('txForm').addEventListener('submit', (e) => {
             e.preventDefault();
