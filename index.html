@@ -112,29 +112,6 @@
         </div>
     </div>
 
-    <!-- MODAL BARU: KELOLA IMPIAN TABUNGAN (EDIT & HAPUS) -->
-    <div id="manage-goal-modal" class="fixed inset-0 z-[110] bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-6 text-slate-800">
-        <div class="bg-white dark:bg-slate-800 w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl space-y-4">
-            <h3 class="text-xl font-bold dark:text-white text-center">Kelola Impian</h3>
-            <div class="space-y-3">
-                <div>
-                    <label class="text-[10px] font-bold uppercase text-slate-400 ml-1">Nama Impian</label>
-                    <input type="text" id="m-edit-goal-name" class="w-full p-4 bg-slate-50 dark:bg-slate-700 rounded-2xl outline-none text-sm font-medium border-none dark:text-white">
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold uppercase text-slate-400 ml-1">Target Dana</label>
-                    <input type="text" id="m-edit-goal-target" class="w-full p-4 bg-slate-50 dark:bg-slate-700 rounded-2xl outline-none text-xl font-bold border-none dark:text-white text-blue-600">
-                </div>
-                
-                <div class="flex gap-2 pt-4">
-                    <button onclick="deleteGoalAction()" class="flex-1 py-4 font-bold text-red-500 bg-red-50 dark:bg-red-500/10 rounded-2xl text-xs uppercase shadow-sm active:scale-95 transition-all">Hapus</button>
-                    <button onclick="saveGoalEdit()" class="flex-[2] bg-blue-600 text-white font-bold py-4 rounded-2xl shadow-lg active:scale-95 transition-all text-xs uppercase">Simpan Edit</button>
-                </div>
-                <button onclick="closeManageGoalModal()" class="w-full py-3 font-bold text-slate-400 text-xs uppercase tracking-wider">Tutup / Batal</button>
-            </div>
-        </div>
-    </div>
-
     <div id="debt-detail-modal" class="fixed inset-0 z-[110] bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-6 text-slate-800">
         <div class="bg-white dark:bg-slate-800 w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl space-y-4">
             <h3 class="text-xl font-bold dark:text-white text-center">Rincian Pembayaran</h3>
@@ -273,6 +250,7 @@
                             <div>
                                 <div class="flex justify-between items-center mb-1 px-1">
                                     <label class="text-[10px] font-bold uppercase text-slate-400 dark:text-slate-400">1. Kategori</label>
+                                    <!-- MERUBAH BAGIAN INI MENJADI LAMBANG PENSIL SEPERTI REQUEST -->
                                     <button type="button" onclick="openManageCatModal()" class="p-1 text-blue-600 dark:text-blue-400 hover:scale-110 transition-transform" title="Kelola Kategori">
                                         <i data-lucide="edit-2" class="w-4 h-4"></i>
                                     </button>
@@ -351,7 +329,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
         const KEY = 'SakuMind';
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxWdmCEv52jXoTZ4GN8Zqqa2VGb4GClfcA-YVYkvXerAnhuERP2q7qXfmV0Rg66tLiYRg/exec';
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwL4ASUhE7y4sXFxK6t0BwUJztZ7N7QeQPtur5rulksSExDYx9KtPJM3xTXQvk-euXSmA/exec';
         
         let db = JSON.parse(localStorage.getItem(KEY)) || {
             txs: [], goals: [], debts: [],
@@ -378,7 +356,7 @@
                     this.value = v ? new Intl.NumberFormat('id-ID').format(v) : '';
                 });
             };
-            ['amt', 'gTarget', 'dAmt', 'dtl-amt', 'dtl-goal-amt', 'dtl-debt-amt', 'm-edit-goal-target'].forEach(formatInp);
+            ['amt', 'gTarget', 'dAmt', 'dtl-amt', 'dtl-goal-amt', 'dtl-debt-amt'].forEach(formatInp);
         });
 
         function save() { 
@@ -427,8 +405,8 @@
 
         // --- AUTH ---
         function setAuthMode(mode) {
-            const regFields = document.getElementById('reg-fields'), t = document.getElementById('authFormTitle'), sub = document.getElementById('authSubTitle'), b = document.getElementById('btnText'), sw = document.getElementById('switchAuthBtn');
             currentAuthMode = mode;
+            const regFields = document.getElementById('reg-fields'), t = document.getElementById('authFormTitle'), sub = document.getElementById('authSubTitle'), b = document.getElementById('btnText'), sw = document.getElementById('switchAuthBtn');
             if (mode === 'login') {
                 t.innerText = "Selamat Datang"; sub.innerText = "Masuk ke Akun SakuMind Anda"; regFields.classList.add('hidden'); b.innerText = "Masuk (Login)"; sw.innerText = "Daftar sekarang";
             } else {
@@ -786,17 +764,14 @@
                 `).join('');
 
                 c.innerHTML += `<div class="bg-white dark:bg-slate-800 p-5 rounded-3xl border dark:border-slate-700 shadow-sm space-y-4 text-slate-800 dark:text-white">
-                    <div class="flex justify-between items-center">
+                    <div class="flex justify-between items-start">
                         <div>
                             <h4 class="font-bold text-lg dark:text-white">${g.name}</h4>
                             <p class="text-xs font-bold text-slate-400">Target: Rp ${g.target.toLocaleString('id-ID')}</p>
                         </div>
-                        <!-- PENSIL UNTUK KELOLA EDIT & HAPUS, TAMBAH TETAP ADA -->
-                        <div class="flex items-center gap-1">
+                        <div class="flex gap-2">
                             <button onclick="saveToGoal(${g.id})" class="bg-blue-50 text-blue-600 px-3 py-1.5 rounded-xl text-[10px] font-bold tracking-wider uppercase">+ Tambah</button>
-                            <button onclick="openManageGoalModal(${g.id})" class="p-2 text-slate-400 hover:text-blue-500 transition-colors" title="Kelola Impian">
-                                <i data-lucide="edit-2" class="w-4 h-4"></i>
-                            </button>
+                            <button onclick="if(confirm('Hapus impian ini?')) { db.goals=db.goals.filter(x=>x.id!=${g.id});save();renderGoals(); }" class="text-red-300 font-bold p-1">Hapus</button>
                         </div>
                     </div>
                     <div class="w-full bg-slate-100 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
@@ -930,53 +905,6 @@
             if(confirm("Apakah Anda yakin ingin menghapus setoran ini?")) {
                 let g = db.goals.find(x => x.id === currentGoalId);
                 if(g) { g.targetHistory = g.targetHistory.filter(x => x.id !== currentGoalHistoryId); g.saved = g.targetHistory.reduce((s, p) => s + p.amount, 0); save(); renderGoals(); closeGoalHistoryDetail(); }
-            }
-        }
-
-        // --- LOGIKA MODAL KELOLA IMPIAN BARU (EDIT & HAPUS) ---
-        let currentManageGoalId = null;
-
-        function openManageGoalModal(id) {
-            let g = db.goals.find(x => x.id === id);
-            if (!g) return;
-            currentManageGoalId = id;
-            document.getElementById('m-edit-goal-name').value = g.name;
-            document.getElementById('m-edit-goal-target').value = new Intl.NumberFormat('id-ID').format(g.target);
-            document.getElementById('manage-goal-modal').classList.remove('hidden');
-        }
-
-        function closeManageGoalModal() {
-            document.getElementById('manage-goal-modal').classList.add('hidden');
-            currentManageGoalId = null;
-        }
-
-        function saveGoalEdit() {
-            if (!currentManageGoalId) return;
-            const newName = document.getElementById('m-edit-goal-name').value.trim();
-            const targetStr = document.getElementById('m-edit-goal-target').value.replace(/\D/g, '');
-            const newTarget = parseInt(targetStr);
-
-            if (!newName || !newTarget) return alert("Nama Impian dan Target Dana tidak boleh kosong!");
-
-            let g = db.goals.find(x => x.id === currentManageGoalId);
-            if (g) {
-                g.name = newName;
-                g.target = newTarget;
-                save();
-                renderGoals();
-                closeManageGoalModal();
-                alert("Perubahan target impian berhasil disimpan!");
-            }
-        }
-
-        function deleteGoalAction() {
-            if (!currentManageGoalId) return;
-            if (confirm("Apakah Anda yakin ingin menghapus impian ini? Semua riwayat tabungannya juga akan hilang.")) {
-                db.goals = db.goals.filter(x => x.id !== currentManageGoalId);
-                save();
-                renderGoals();
-                closeManageGoalModal();
-                alert("Target impian berhasil dihapus.");
             }
         }
 
