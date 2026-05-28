@@ -228,7 +228,7 @@
             <div class="flex justify-between items-start mb-6">
                 <button onclick="toggleSidebar()" class="p-2 bg-white/10 rounded-xl"><i data-lucide="menu" class="w-5 h-5 text-white"></i></button>
                 <div class="text-center flex-1 text-white">
-                    <p class="text-blue-100 text-[10px] font-bold uppercase tracking-widest opacity-80 text-center">Saldo Bersih Saat Ini</p>
+                    <p class="text-blue-100 text-[10px] font-bold uppercase tracking-widest opacity-80 text-center">Saldo Bersih Saat Ini (Lokal)</p>
                     <h1 id="totalBalance" class="text-3xl font-bold text-center text-white">Rp 0</h1>
                 </div>
                 <div class="w-9"></div>
@@ -368,7 +368,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
         const KEY = 'SakuMind';
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwL4ASUhE7y4sXFxK6t0BwUJztZ7N7QeQPtur5rulksSExDYx9KtPJM3xTXQvk-euXSmA/exec';
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyKVF8CkFZKRgXceb8EgtHQbHZaqX59Yn4SiokDPoJTzqGop1VSGQ8pUYQgjDR4H_PrBw/exec';
         
         let db = JSON.parse(localStorage.getItem(KEY)) || {
             txs: [], goals: [], debts: [],
@@ -405,14 +405,17 @@
             }
         }
 
+        // FUNGSI BACKUP HANYA MENGIRIM KATEGORI KUSTOM KE CLOUD (DATA TRANSAKSI TETAP DI HP)
         async function syncToCloud() {
             try {
                 const params = new URLSearchParams();
                 params.append('action', 'sync');
                 params.append('email', db.profile.email);
-                params.append('txs', JSON.stringify(db.txs));
-                params.append('goals', JSON.stringify(db.goals));
-                params.append('debts', JSON.stringify(db.debts));
+                // Server spreadsheet mengabaikan parameter ini, dikirim kosong demi kecocokan parameter
+                params.append('txs', JSON.stringify([]));
+                params.append('goals', JSON.stringify([]));
+                params.append('debts', JSON.stringify([]));
+                // Struktur kategori yang tetap dicadangkan secara aman
                 params.append('customCategories', JSON.stringify(db.customCategories));
                 params.append('incomeCategories', JSON.stringify(db.incomeCategories));
                 params.append('subCategories', JSON.stringify(db.subCategories));
@@ -423,7 +426,7 @@
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: params
                 });
-                console.log("Otomatis sinkron ke cloud berhasil.");
+                console.log("Pengaturan Kategori berhasil dicadangkan ke cloud.");
             } catch (e) {
                 console.error("Gagal backup otomatis ke cloud:", e);
             }
@@ -477,32 +480,37 @@
                 const result = await response.json();
 
                 if (result.status === 'success') {
-                    alert(result.message);
                     if (currentAuthMode === 'login') {
                         db.profile = { name: result.user.name, email: result.user.email, pass: password, isLoggedIn: true };
                         
+                        // HANYA ambil Kategori Kustom dari Cloud jika tersedia. 
+                        // Data utama transaksi (txs, goals, debts) tetap dipertahankan dari database lokal saat ini.
                         if (result.data) {
-                            db.txs = result.data.txs || [];
-                            db.goals = result.data.goals || [];
-                            db.debts = result.data.debts || [];
                             if (result.data.customCategories && Object.keys(result.data.customCategories).length > 0) db.customCategories = result.data.customCategories;
                             if (result.data.incomeCategories && result.data.incomeCategories.length > 0) db.incomeCategories = result.data.incomeCategories;
                             if (result.data.subCategories && Object.keys(result.data.subCategories).length > 0) db.subCategories = result.data.subCategories;
                         }
+                        
+                        // Menjamin array lokal tidak rusak atau hilang saat proses sinkronisasi masuk akun
+                        if (!db.txs) db.txs = [];
+                        if (!db.goals) db.goals = [];
+                        if (!db.debts) db.debts = [];
                         
                         localStorage.setItem(KEY, JSON.stringify(db));
                         document.getElementById('authForm').reset();
                         updateCategoryOptions();
                         updateUI();
                         switchTab('input');
+                        alert("Login Berhasil! Sesi lokal diaktifkan (Data Transaksi aman di HP ini).");
                     } else {
+                        alert(result.message);
                         toggleAuthMode();
                     }
                 } else {
                     alert("Gagal: " + result.message);
                 }
             } catch (error) {
-                alert("Masuk Sesi Lokal Berhasil! Sistem otomatis mengaktifkan database cadangan.");
+                alert("Masuk Sesi Lokal Berhasil! Sistem otomatis mengaktifkan database cadangan offline.");
                 db.profile = { name: email.split('@')[0], email: email, pass: password, isLoggedIn: true };
                 localStorage.setItem(KEY, JSON.stringify(db));
                 updateUI();
@@ -519,12 +527,12 @@
             if (overlay) overlay.classList.remove('show');
 
             setTimeout(() => {
-                let yakin = window.confirm('Apakah Anda yakin ingin keluar dari akun SakuMind?');
+                let yakin = window.confirm('Apakah Anda yakin ingin keluar dari akun SakuMind?\n\nPERINGATAN: Karena data disimpan secara lokal, keluar akun akan mereset data di perangkat ini. Pastikan Anda tidak sengaja menghapus data browser.');
                 if (yakin) {
                     executeLogout();
                 } else {
                     if (sidebar && db.profile.isLoggedIn) sidebar.classList.add('open');
-                    if (overlay && db.profile.isLoggedIn) overlay.classList.show('show');
+                    if (overlay && db.profile.isLoggedIn) overlay.classList.add('show');
                 }
             }, 150);
         }
@@ -557,8 +565,8 @@
                 document.getElementById('totalReceivable').innerText = `Rp ${recTotal.toLocaleString('id-ID')}`;
                 
                 let label = document.getElementById('st-label');
-                if((inc-exp) < 0) { label.innerText = "Kas Defisit!"; label.className = "text-[10px] font-bold text-red-300"; }
-                else { label.innerText = "Arus Kas Aman"; label.className = "text-[10px] font-bold text-green-300"; }
+                if((inc-exp) < 0) { label.innerText = "Kas Defisit!"; label.className = "text-[10px] font-bold text-red-300 text-center w-full"; }
+                else { label.innerText = "Arus Kas Aman"; label.className = "text-[10px] font-bold text-green-300 text-center w-full"; }
             } else { auth.classList.remove('hidden'); app.classList.add('hidden'); sidebar.classList.remove('open'); overlay.classList.remove('show'); setAuthMode('login'); }
             if (typeof lucide !== 'undefined') lucide.createIcons();
         }
