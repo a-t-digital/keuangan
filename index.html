@@ -233,14 +233,18 @@
                 </div>
                 <div class="w-9"></div>
             </div>
-            <div class="grid grid-cols-2 gap-3 text-center text-white">
-                <div class="bg-white/10 p-3 rounded-2xl border border-white/5 backdrop-blur-sm text-center">
-                    <p class="text-[8px] uppercase font-bold text-blue-100 mb-1">Hutang Aktif</p>
-                    <p id="totalDebt" class="font-bold text-sm text-center">Rp 0</p>
+            <div class="grid grid-cols-3 gap-2 text-center text-white">
+                <div class="bg-white/10 p-2.5 rounded-2xl border border-white/5 backdrop-blur-sm text-center">
+                    <p class="text-[7.5px] uppercase font-bold text-blue-100 mb-0.5">Hutang</p>
+                    <p id="totalDebt" class="font-bold text-xs text-center truncate">Rp 0</p>
                 </div>
-                <div id="budgetStatus" class="bg-white/10 p-3 rounded-2xl border border-white/5 backdrop-blur-sm overflow-hidden text-center">
-                    <p class="text-[8px] uppercase font-bold text-blue-100 mb-1 text-center">Notifikasi Kas</p>
-                    <p id="st-label" class="text-[10px] font-bold truncate text-center">Aman</p>
+                <div class="bg-white/10 p-2.5 rounded-2xl border border-white/5 backdrop-blur-sm text-center">
+                    <p class="text-[7.5px] uppercase font-bold text-blue-100 mb-0.5">Piutang</p>
+                    <p id="totalReceivable" class="font-bold text-xs text-center truncate">Rp 0</p>
+                </div>
+                <div id="budgetStatus" class="bg-white/10 p-2.5 rounded-2xl border border-white/5 backdrop-blur-sm overflow-hidden text-center flex flex-col justify-center">
+                    <p class="text-[7.5px] uppercase font-bold text-blue-100 mb-0.5 text-center">Notifikasi Kas</p>
+                    <p id="st-label" class="text-[9.5px] font-bold truncate text-center">Aman</p>
                 </div>
             </div>
         </header>
@@ -294,14 +298,30 @@
             </section>
 
             <section id="section-history" class="hidden p-6 space-y-4">
-                <div class="flex gap-2 text-slate-800">
-                    <input type="text" id="srch" oninput="renderHistory()" placeholder="Cari riwayat..." class="flex-1 p-3 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl text-sm outline-none text-slate-800 dark:text-white font-medium">
-                    <input type="date" id="fDate" onchange="renderHistory()" class="p-3 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl text-xs outline-none text-slate-800 dark:text-white">
+                <div class="flex flex-col gap-2 text-slate-800">
+                    <input type="text" id="srch" oninput="renderHistory()" placeholder="Cari riwayat..." class="w-full p-3 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl text-sm outline-none text-slate-800 dark:text-white font-medium">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="text-[8px] font-bold uppercase text-slate-400 ml-1">Dari Tanggal</label>
+                            <input type="date" id="fDateStart" onchange="renderHistory()" class="w-full p-2.5 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-xl text-xs outline-none text-slate-800 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="text-[8px] font-bold uppercase text-slate-400 ml-1">Sampai Tanggal</label>
+                            <input type="date" id="fDateEnd" onchange="renderHistory()" class="w-full p-2.5 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-xl text-xs outline-none text-slate-800 dark:text-white">
+                        </div>
+                    </div>
                 </div>
                 <div id="txList" class="space-y-3"></div>
             </section>
 
             <section id="section-analysis" class="hidden p-6 space-y-6">
+                <div class="bg-white dark:bg-slate-800 border dark:border-slate-700 p-4 rounded-3xl space-y-2 shadow-sm text-slate-800">
+                    <p class="text-[9px] font-bold uppercase text-slate-400 ml-1">Filter Jangka Waktu Analisa</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="date" id="anaDateStart" onchange="renderAnalysis()" class="w-full p-2.5 bg-slate-50 dark:bg-slate-900 border-none rounded-xl text-xs outline-none text-slate-800 dark:text-white">
+                        <input type="date" id="anaDateEnd" onchange="renderAnalysis()" class="w-full p-2.5 bg-slate-50 dark:bg-slate-900 border-none rounded-xl text-xs outline-none text-slate-800 dark:text-white">
+                    </div>
+                </div>
                 <div class="bg-blue-600 p-6 rounded-[2.5rem] text-white shadow-xl space-y-4">
                     <h3 class="font-bold text-xs uppercase tracking-widest opacity-80 text-center">Analisa per Golongan</h3>
                     <div class="space-y-3 font-bold uppercase">
@@ -353,7 +373,7 @@
         let db = JSON.parse(localStorage.getItem(KEY)) || {
             txs: [], goals: [], debts: [],
             settings: { darkMode: true },
-            profile: { name: '', email: '', isLoggedIn: false },
+            profile: { name: '', email: '', pass: '', isLoggedIn: false },
             customCategories: { "Kebutuhan": ['🍔 Makan', '💳 Tagihan'], "Keinginan": ['🛍️ Belanja'], "Investasi": ['📈 Tabungan'] },
             incomeCategories: ['💰 Gaji', '🎁 Bonus', '➕ Pemasukan Lainnya'],
             subCategories: { '🍔 Makan': ['Makan Siang', 'Jajan'], '💳 Tagihan': ['Listrik', 'Air'], '🛍️ Belanja': ['Pakaian'], '📈 Tabungan': ['Simpanan'], '💰 Gaji': ['Gaji Pokok'], '🎁 Bonus': ['THR'], '➕ Pemasukan Lainnya': ['Umum'] }
@@ -459,7 +479,7 @@
                 if (result.status === 'success') {
                     alert(result.message);
                     if (currentAuthMode === 'login') {
-                        db.profile = { name: result.user.name, email: result.user.email, isLoggedIn: true };
+                        db.profile = { name: result.user.name, email: result.user.email, pass: password, isLoggedIn: true };
                         
                         if (result.data) {
                             db.txs = result.data.txs || [];
@@ -483,7 +503,7 @@
                 }
             } catch (error) {
                 alert("Masuk Sesi Lokal Berhasil! Sistem otomatis mengaktifkan database cadangan.");
-                db.profile = { name: email.split('@')[0], email: email, isLoggedIn: true };
+                db.profile = { name: email.split('@')[0], email: email, pass: password, isLoggedIn: true };
                 localStorage.setItem(KEY, JSON.stringify(db));
                 updateUI();
                 switchTab('input');
@@ -510,7 +530,7 @@
         }
 
         function executeLogout() {
-            db.profile = { name: '', email: '', isLoggedIn: false };
+            db.profile = { name: '', email: '', pass: '', isLoggedIn: false };
             db.txs = [];
             db.goals = [];
             db.debts = [];
@@ -530,8 +550,11 @@
                 let exp = db.txs.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
                 document.getElementById('totalBalance').innerText = `Rp ${(inc-exp).toLocaleString('id-ID')}`;
                 
-                let debtTotal = db.debts.reduce((sum, d) => sum + (d.amount - (d.payments ? d.payments.reduce((s,p)=>s+p.amount,0) : 0)), 0);
+                let debtTotal = db.debts.filter(d => d.type === 'hutang').reduce((sum, d) => sum + (d.amount - (d.payments ? d.payments.reduce((s,p)=>s+p.amount,0) : 0)), 0);
+                let recTotal = db.debts.filter(d => d.type === 'piutang').reduce((sum, d) => sum + (d.amount - (d.payments ? d.payments.reduce((s,p)=>s+p.amount,0) : 0)), 0);
+                
                 document.getElementById('totalDebt').innerText = `Rp ${debtTotal.toLocaleString('id-ID')}`;
+                document.getElementById('totalReceivable').innerText = `Rp ${recTotal.toLocaleString('id-ID')}`;
                 
                 let label = document.getElementById('st-label');
                 if((inc-exp) < 0) { label.innerText = "Kas Defisit!"; label.className = "text-[10px] font-bold text-red-300"; }
@@ -692,6 +715,14 @@
             updateCategoryOptions();
         }
 
+        // Helper untuk parse string tanggal DD/MM/YYYY ke bentuk Date Object JavaScript standar
+        function parseLocalDateString(dateStr) {
+            if(!dateStr) return null;
+            const parts = dateStr.split('/');
+            if(parts.length !== 3) return null;
+            return new Date(parts[2], parts[1] - 1, parts[0]);
+        }
+
         document.getElementById('txForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const amt = parseInt(document.getElementById('amt').value.replace(/\D/g, ''));
@@ -718,15 +749,50 @@
         // --- RENDER VISUAL DATA ---
         function renderAnalysis() {
             let sums = { Kebutuhan: 0, Keinginan: 0, Investasi: 0 };
-            db.txs.filter(t => t.type === 'expense').forEach(t => { if(sums[t.group] !== undefined) sums[t.group] += t.amount; });
+            const startVal = document.getElementById('anaDateStart').value;
+            const endVal = document.getElementById('anaDateEnd').value;
+            
+            const startDate = startVal ? new Date(startVal) : null;
+            const endDate = endVal ? new Date(endVal) : null;
+            if(startDate) startDate.setHours(0,0,0,0);
+            if(endDate) endDate.setHours(23,59,59,999);
+
+            db.txs.filter(t => t.type === 'expense').forEach(t => { 
+                let tDate = parseLocalDateString(t.date);
+                if(tDate) tDate.setHours(0,0,0,0);
+
+                let passFilter = true;
+                if(startDate && (!tDate || tDate < startDate)) passFilter = false;
+                if(endDate && (!tDate || tDate > endDate)) passFilter = false;
+
+                if(passFilter && sums[t.group] !== undefined) {
+                    sums[t.group] += t.amount; 
+                }
+            });
             for(let k in sums) document.getElementById('sum-' + k.toLowerCase()).innerText = `Rp ${sums[k].toLocaleString('id-ID')}`;
         }
 
         function renderHistory() {
             const cont = document.getElementById('txList'); cont.innerHTML = '';
-            const q = document.getElementById('srch').value.toLowerCase(), f = document.getElementById('fDate').value;
+            const q = document.getElementById('srch').value.toLowerCase();
+            const startVal = document.getElementById('fDateStart').value;
+            const endVal = document.getElementById('fDateEnd').value;
+            
+            const startDate = startVal ? new Date(startVal) : null;
+            const endDate = endVal ? new Date(endVal) : null;
+            if(startDate) startDate.setHours(0,0,0,0);
+            if(endDate) endDate.setHours(23,59,59,999);
+
             db.txs.slice().reverse().forEach(t => {
-                if((t.category.toLowerCase().includes(q) || (t.subcat && t.subcat.toLowerCase().includes(q))) && (!f || t.date === new Date(f).toLocaleDateString('id-ID'))) {
+                let tDate = parseLocalDateString(t.date);
+                if(tDate) tDate.setHours(0,0,0,0);
+
+                let passFilter = true;
+                if(startDate && (!tDate || tDate < startDate)) passFilter = false;
+                if(endDate && (!tDate || tDate > endDate)) passFilter = false;
+                if(q && !(t.category.toLowerCase().includes(q) || (t.subcat && t.subcat.toLowerCase().includes(q)))) passFilter = false;
+
+                if(passFilter) {
                     const isEx = t.type === 'expense';
                     cont.innerHTML += `<div onclick="openTxDetail(${t.id})" class="bg-white dark:bg-slate-800 p-4 rounded-3xl border border-slate-50 dark:border-slate-700 flex justify-between items-center shadow-sm cursor-pointer active:scale-[0.98] transition-all">
                         <div>
@@ -1001,7 +1067,20 @@
             }
         }
 
-        function clearAllData() { if(confirm('Reset Database?')) { localStorage.clear(); location.reload(); } }
+        function clearAllData() { 
+            if(confirm('Apakah Anda benar-benar ingin mereset seluruh database? Tindakan ini tidak bisa dibatalkan.')) {
+                let inputPass = prompt("Masukkan Kata Sandi akun Anda untuk mengonfirmasi reset:");
+                if (inputPass === null) return; // User membatalkan prompt
+                
+                if (inputPass === db.profile.pass) {
+                    localStorage.clear(); 
+                    alert("Database berhasil direset!");
+                    location.reload(); 
+                } else {
+                    alert("Kata sandi salah! Reset database digagalkan.");
+                }
+            } 
+        }
     </script>
 </body>
 </html>
