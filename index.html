@@ -435,7 +435,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
         const KEY = 'SakuMind';
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwhsY1fhZkWWelU0mEHvEt4rw1hKRbkyujsOh3Aid7TgW_0auK4hoA25O4fZ-ErylV-AA/exec';
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwDFxWAuKosfuqTE9jxzqBJkHG1BCPnQcReyPzSurfNyoHV3x32UCLcN0nFP3njS0vZHg/exec';
         
         // Inisialisasi db dengan penambahan 'patungan'
         let db = JSON.parse(localStorage.getItem(KEY)) || {
@@ -559,31 +559,27 @@
         }
 
         async function syncToCloud() {
-    if (!db.profile || !db.profile.isLoggedIn || !db.profile.email) return;
-    try {
-        const payload = {
-            action: "sync",
-            email: db.profile.email,
-            txs: db.txs || [],
-            goals: db.goals || [],
-            debts: db.debts || [],
-            patungan: db.patungan || [], // Sync patungan
-            customCategories: db.customCategories || {},
-            incomeCategories: db.incomeCategories || [],
-            subCategories: db.subCategories || {}
-        };
-
-        await fetch(APPS_SCRIPT_URL, { 
-            method: 'POST',
-            mode: 'cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-    } catch (e) { 
-        console.error("Cloud sync failed:", e); 
-    }
-}
-
+            if (!db.profile || !db.profile.isLoggedIn || !db.profile.email) return;
+            try {
+                const payload = {
+                    action: "sync",
+                    email: db.profile.email,
+                    txs: JSON.stringify(db.txs || []),
+                    goals: JSON.stringify(db.goals || []),
+                    debts: JSON.stringify(db.debts || []),
+                    patungan: JSON.stringify(db.patungan || []), // Sync patungan
+                    customCategories: JSON.stringify(db.customCategories || {}),
+                    incomeCategories: JSON.stringify(db.incomeCategories || []),
+                    subCategories: JSON.stringify(db.subCategories || {})
+                };
+                await fetch(APPS_SCRIPT_URL, { 
+                    method: 'POST', 
+                    mode: 'cors',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(payload)
+                });
+            } catch (e) { console.error("Cloud sync failed:", e); }
+        }
 
         async function fetchLatestFromCloud() {
             if (!db.profile || !db.profile.isLoggedIn || !db.profile.email || !db.profile.pass) return;
@@ -895,19 +891,27 @@
                 };
             });
 
-            // Misalkan Anda punya array patungan yang sedang diedit
-let targetPatungan = db.patungan.find(p => p.id === currentPatunganId);
+            let target = 0;
+            if (isTarget) {
+                let tVal = await appPrompt("Masukkan Target Dana (Rp):", "", true);
+                if(!tVal) return;
+                target = parseInt(tVal.replace(/\D/g, ''));
+                if(target <= 0) return appAlert("Target tidak valid.");
+            }
 
-// 1. Ambil email teman dari input form di HTML
-let emailTeman = document.getElementById('input-email-teman').value;
+            let name = await appPrompt("Masukkan Nama Kartu Patungan:", "Patungan Baru", false);
+            if (!name) return;
 
-// 2. Tambahkan email tersebut ke dalam array members
-if (!targetPatungan.members.includes(emailTeman)) {
-    targetPatungan.members.push(emailTeman); // <--- INI BAGIAN PENTING
-}
-
-// 3. Setelah ditambahkan, baru panggil fungsi sync ke Apps Script
-saveData(); // Pastikan fungsi save Anda mengirim data patungan yang sudah terupdate ini
+            db.patungan.push({
+                id: Date.now(),
+                name: name,
+                target: target,
+                collected: 0,
+                members: [db.profile.email],
+                history: []
+            });
+            save();
+            renderPatungan();
         }
 
         function renderPatungan() {
@@ -918,7 +922,7 @@ saveData(); // Pastikan fungsi save Anda mengirim data patungan yang sudah terup
                 let progress = p.target > 0 ? Math.min((p.collected / p.target) * 100, 100) : 0;
                 let hist = (p.history || []).map(h => `<div onclick="openPatunganHistoryDetail(${p.id}, ${h.id})" class="flex justify-between items-center text-[10px] py-1 border-b border-slate-50 dark:border-slate-700 cursor-pointer"><span>${h.date} (${h.sender})</span><span class="text-indigo-600 font-bold">Rp ${h.amount.toLocaleString('id-ID')}</span></div>`).join('');
 
-                let targetHtml = p.target > 0 ? `<p class="text-xs text-slate-400">Target: Rp ${p.target.toLocaleString('id-ID')}</p>` : `<p class="text-[10px] text-slate-400 italic">Tanpa Target</p>`;
+                let targetHtml = p.target > 0 ? `<p class="text-xs text-slate-400">Target: Rp ${p.target.toLocaleString('id-ID')}</p>` : `<p class="text-[10px] text-slate-400 italic">Batal</p>`;
                 let progressHtml = p.target > 0 ? `<div class="w-full bg-slate-100 dark:bg-slate-700 h-2 rounded-full my-2"><div class="bg-indigo-600 h-full rounded-full transition-all" style="width:${progress}%"></div></div>` : '';
 
                 // PENAMBAHAN TOMBOL EDIT DAN HAPUS PATUNGAN
