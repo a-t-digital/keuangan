@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
+<head>    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SakuMind</title>
@@ -31,6 +31,22 @@
 </head>
 <body class="bg-slate-50 min-h-screen text-slate-800 dark:bg-slate-900 dark:text-slate-100">
 
+    <div id="global-popup-modal" class="fixed inset-0 z-[150] bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-6 text-slate-800">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl space-y-5 text-center border border-slate-100 dark:border-slate-700">
+            <h3 id="popup-title" class="text-xl font-bold dark:text-white">Notifikasi</h3>
+            <p id="popup-msg" class="text-sm text-slate-500 dark:text-slate-400 font-medium whitespace-pre-line"></p>
+            
+            <div id="popup-input-wrapper" class="hidden pt-2">
+                <input type="text" id="popup-input" class="w-full p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl outline-none text-center text-lg font-bold border dark:border-slate-700 dark:text-white text-blue-600">
+            </div>
+            
+            <div class="grid grid-cols-2 gap-2 pt-2">
+                <button id="popup-cancel-btn" class="bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 font-bold py-4 rounded-2xl text-xs uppercase shadow-sm active:scale-95 transition-all">Batal</button>
+                <button id="popup-ok-btn" class="bg-blue-600 text-white font-bold py-4 rounded-2xl shadow-lg active:scale-95 transition-all text-xs uppercase">Ok</button>
+            </div>
+        </div>
+    </div>
+
     <div id="manage-cat-modal" class="fixed inset-0 z-[110] bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-6 text-slate-800">
         <div class="bg-white dark:bg-slate-800 w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl space-y-4">
             <h3 id="manage-modal-title" class="text-xl font-bold dark:text-white text-center">Kelola Kategori</h3>
@@ -55,7 +71,7 @@
                 <div class="grid grid-cols-3 gap-2 pt-4">
                     <button onclick="actionDeleteCategory()" class="bg-red-50 dark:bg-red-500/10 text-red-500 font-bold py-4 rounded-2xl text-[10px] uppercase shadow-sm active:scale-95 transition-all">Hapus</button>
                     <button onclick="actionAddCategory()" class="bg-blue-50 dark:bg-blue-500/10 text-blue-600 font-bold py-4 rounded-2xl text-[10px] uppercase shadow-sm active:scale-95 transition-all">+ Baru</button>
-                    <button onclick="actionSaveCategoryEdit()" class="bg-blue-600 text-white font-bold py-4 rounded-2xl shadow-lg active:scale-95 transition-all text-[10px] uppercase">Simpan</button>
+                    <button onclick="actionSaveCategoryEdit()" class="bg-blue-600 text-white font-bold py-4 rounded-2xl shadow-lg active:scale-95 transition-all text-[10px] uppercase">Ubah</button>
                 </div>
                 <button onclick="closeManageCatModal()" class="w-full py-2 font-bold text-slate-400 text-xs uppercase tracking-wider">Batal / Tutup</button>
             </div>
@@ -132,6 +148,17 @@
         </div>
     </div>
 
+    
+    <div id="patungan-choice-modal" class="fixed inset-0 z-[120] bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-6 text-slate-800">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl space-y-5 text-center border border-slate-100 dark:border-slate-700">
+            <h3 class="text-xl font-bold dark:text-white">Jenis Patungan</h3>
+            <div class="grid grid-cols-2 gap-3 pt-4">
+                <button onclick="handlePatunganChoice(false)" class="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold py-4 rounded-2xl text-xs uppercase shadow-sm active:scale-95 transition-all">Tanpa Target</button>
+                <button onclick="handlePatunganChoice(true)" class="bg-blue-600 text-white font-bold py-4 rounded-2xl shadow-lg active:scale-95 transition-all text-xs uppercase">Dengan Target</button>
+            </div>
+        </div>
+    </div>
+
     <div id="debt-detail-modal" class="fixed inset-0 z-[110] bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-6 text-slate-800">
         <div class="bg-white dark:bg-slate-800 w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl space-y-4">
             <h3 class="text-xl font-bold dark:text-white text-center">Rincian Pembayaran</h3>
@@ -150,6 +177,28 @@
                     <button onclick="saveDebtHistoryDetail()" class="flex-[2] bg-green-600 text-white font-bold py-4 rounded-2xl shadow-lg active:scale-95 transition-all text-xs uppercase">Simpan Perubahan</button>
                 </div>
                 <button onclick="closeDebtHistoryDetail()" class="w-full py-3 font-bold text-slate-400 text-xs uppercase tracking-wider">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="patungan-detail-modal" class="fixed inset-0 z-[110] bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-6 text-slate-800">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl space-y-4">
+            <h3 class="text-xl font-bold dark:text-white text-center">Rincian Kontribusi</h3>
+            <div class="space-y-3">
+                <div>
+                    <label class="text-[10px] font-bold uppercase text-slate-400 ml-1">Nominal Kontribusi</label>
+                    <input type="text" id="dtl-patungan-amt" class="w-full p-4 bg-slate-50 dark:bg-slate-700 rounded-2xl outline-none text-xl font-bold border-none dark:text-white text-indigo-600">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold uppercase text-slate-400 ml-1">Tanggal Kontribusi</label>
+                    <input type="text" id="dtl-patungan-date" class="w-full p-4 bg-slate-50 dark:bg-slate-700 rounded-2xl outline-none text-sm font-medium border-none dark:text-white">
+                </div>
+                
+                <div class="flex gap-2 pt-4">
+                    <button onclick="deletePatunganHistoryDetail()" class="flex-1 py-4 font-bold text-red-500 bg-red-50 dark:bg-red-500/10 rounded-2xl text-xs uppercase shadow-sm active:scale-95 transition-all">Hapus</button>
+                    <button onclick="savePatunganHistoryDetail()" class="flex-[2] bg-indigo-600 text-white font-bold py-4 rounded-2xl shadow-lg active:scale-95 transition-all text-xs uppercase">Simpan Perubahan</button>
+                </div>
+                <button onclick="closePatunganHistoryDetail()" class="w-full py-3 font-bold text-slate-400 text-xs uppercase tracking-wider">Tutup</button>
             </div>
         </div>
     </div>
@@ -218,19 +267,24 @@
                     </a>
                 </div>
 
-                <button onclick="clearAllData()" class="w-full text-red-500 text-[10px] font-bold uppercase p-3 border border-red-50 rounded-2xl mt-4">Reset Database</button>
-            </div>
-        </div>
+       
     </aside>
 
     <div id="main-app" class="max-w-md mx-auto bg-white dark:bg-slate-900 min-h-screen shadow-2xl flex flex-col relative overflow-hidden hidden text-slate-800">
-        <header class="bg-blue-600 p-6 text-white sticky top-0 z-20 shadow-lg">
-            <div class="flex justify-between items-start mb-6">
-                <button onclick="toggleSidebar()" class="p-2 bg-white/10 rounded-xl"><i data-lucide="menu" class="w-5 h-5 text-white"></i></button>
-                <div class="text-center flex-1 text-white">
-                    <p class="text-blue-100 text-[10px] font-bold uppercase tracking-widest opacity-80 text-center">Saldo Bersih Saat Ini (Lokal)</p>
-                    <h1 id="totalBalance" class="text-3xl font-bold text-center text-white">Rp 0</h1>
+        <header class="bg-blue-600 pt-12 pb-6 px-6 text-white sticky top-0 z-20 shadow-lg">
+            <div class="flex justify-between items-center mb-6">
+                <button onclick="toggleSidebar()" class="p-2 bg-white/10 rounded-xl flex items-center justify-center"><i data-lucide="menu" class="w-5 h-5 text-white"></i></button>
+                
+                <div class="text-center flex-1 text-white relative">
+                    <p class="text-blue-100 text-[10px] font-bold uppercase tracking-widest text-center opacity-80 mb-1">Saldo Bersih Saat Ini</p>
+                    <div class="flex items-center justify-center gap-2">
+                        <h1 id="totalBalance" class="text-3xl font-bold text-white">Rp 0</h1>
+                        <button onclick="toggleBalanceVisibility()" type="button" class="focus:outline-none p-1 hover:scale-110 transition-transform">
+                            <i id="eye-icon" data-lucide="eye-off" class="w-4 h-4 text-blue-100"></i>
+                        </button>
+                    </div>
                 </div>
+                
                 <div class="w-9"></div>
             </div>
             <div class="grid grid-cols-3 gap-2 text-center text-white">
@@ -249,12 +303,13 @@
             </div>
         </header>
 
-        <div class="flex border-b text-[10px] font-bold sticky top-[164px] bg-white z-10 overflow-x-auto hide-scroll text-slate-400 font-bold uppercase tracking-widest dark:bg-slate-900 dark:border-slate-800">
+        <div class="flex border-b text-[10px] font-bold sticky top-[188px] bg-white z-10 overflow-x-auto hide-scroll text-slate-400 font-bold uppercase tracking-widest dark:bg-slate-900 dark:border-slate-800">
             <button onclick="switchTab('input')" id="tab-input" class="flex-none px-6 py-4 tab-active uppercase">Input</button>
             <button onclick="switchTab('history')" id="tab-history" class="flex-none px-6 py-4">Riwayat</button>
             <button onclick="switchTab('analysis')" id="tab-analysis" class="flex-none px-6 py-4">Analisa</button>
             <button onclick="switchTab('goals')" id="tab-goals" class="flex-none px-6 py-4">Tabungan</button>
             <button onclick="switchTab('debt')" id="tab-debt" class="flex-none px-6 py-4">Hutang</button>
+            <button onclick="switchTab('patungan')" id="tab-patungan" class="flex-none px-6 py-4">Patungan</button>
         </div>
 
         <main class="flex-1 overflow-y-auto hide-scroll pb-24 text-slate-800 dark:text-white font-medium">
@@ -362,6 +417,18 @@
                 </div>
                 <div id="debtCards" class="space-y-3"></div>
             </section>
+
+            <section id="section-patungan" class="hidden p-6 space-y-4">
+                <div class="bg-indigo-600 p-6 rounded-3xl text-white space-y-4 shadow-xl">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-bold text-sm">Halaman Patungan</h3>
+                        <i data-lucide="users" class="w-5 h-5 text-indigo-200"></i>
+                    </div>
+                    <p class="text-xs text-indigo-100 mb-2">Kumpulkan dana bersama teman dengan mudah dan transparan.</p>
+                    <button onclick="addPatungan()" class="w-full bg-white text-indigo-600 font-bold py-3 rounded-xl text-xs uppercase active:scale-95 transition-all shadow-lg">+ Tambah Kartu Patungan</button>
+                </div>
+                <div id="patunganCards" class="space-y-3"></div>
+            </section>
         </main>
     </div>
 
@@ -370,17 +437,98 @@
         const KEY = 'SakuMind';
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwDFxWAuKosfuqTE9jxzqBJkHG1BCPnQcReyPzSurfNyoHV3x32UCLcN0nFP3njS0vZHg/exec';
         
+        // Inisialisasi db dengan penambahan 'patungan'
         let db = JSON.parse(localStorage.getItem(KEY)) || {
-            txs: [], goals: [], debts: [],
-            settings: { darkMode: true },
+            txs: [], goals: [], debts: [], patungan: [],
+            settings: { darkMode: true, hideBalance: true },
             profile: { name: '', email: '', pass: '', isLoggedIn: false },
             customCategories: { "Kebutuhan": ['🍔 Makan', '💳 Tagihan'], "Keinginan": ['🛍️ Belanja'], "Investasi": ['📈 Tabungan'] },
             incomeCategories: ['💰 Gaji', '🎁 Bonus', '➕ Pemasukan Lainnya'],
             subCategories: { '🍔 Makan': ['Makan Siang', 'Jajan'], '💳 Tagihan': ['Listrik', 'Air'], '🛍️ Belanja': ['Pakaian'], '📈 Tabungan': ['Simpanan'], '💰 Gaji': ['Gaji Pokok'], '🎁 Bonus': ['THR'], '➕ Pemasukan Lainnya': ['Umum'] }
         };
 
+        // Migrasi state yang ada bila data patungan belum dibuat
+        if(!db.patungan) db.patungan = [];
+
         let currentType = 'expense';
         let currentAuthMode = 'login';
+
+        // --- GLOBAL ASYNC POPUP INTERFACE FUNCTIONS ---
+        function appAlert(msg, title = "Notifikasi") {
+            return new Promise((resolve) => {
+                document.getElementById('popup-title').innerText = title;
+                document.getElementById('popup-msg').innerText = msg;
+                document.getElementById('popup-msg').classList.remove('hidden');
+                document.getElementById('popup-input-wrapper').classList.add('hidden');
+                document.getElementById('popup-cancel-btn').classList.add('hidden');
+                
+                const okBtn = document.getElementById('popup-ok-btn');
+                okBtn.className = "col-span-2 bg-blue-600 text-white font-bold py-4 rounded-2xl shadow-lg active:scale-95 transition-all text-xs uppercase";
+                
+                const modal = document.getElementById('global-popup-modal');
+                modal.classList.remove('hidden');
+                
+                okBtn.onclick = () => { modal.classList.add('hidden'); resolve(); };
+            });
+        }
+
+        function appConfirm(msg, title = "Konfirmasi") {
+            return new Promise((resolve) => {
+                document.getElementById('popup-title').innerText = title;
+                document.getElementById('popup-msg').innerText = msg;
+                document.getElementById('popup-msg').classList.remove('hidden');
+                document.getElementById('popup-input-wrapper').classList.add('hidden');
+                
+                const cancelBtn = document.getElementById('popup-cancel-btn');
+                cancelBtn.classList.remove('hidden');
+                cancelBtn.className = "bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 font-bold py-4 rounded-2xl text-xs uppercase shadow-sm active:scale-95 transition-all";
+                
+                const okBtn = document.getElementById('popup-ok-btn');
+                okBtn.className = "bg-blue-600 text-white font-bold py-4 rounded-2xl shadow-lg active:scale-95 transition-all text-xs uppercase";
+                
+                const modal = document.getElementById('global-popup-modal');
+                modal.classList.remove('hidden');
+                
+                okBtn.onclick = () => { modal.classList.add('hidden'); resolve(true); };
+                cancelBtn.onclick = () => { modal.classList.add('hidden'); resolve(false); };
+            });
+        }
+
+        function appPrompt(msg, defaultVal = '', isNumeric = false) {
+            return new Promise((resolve) => {
+                document.getElementById('popup-title').innerText = msg;
+                document.getElementById('popup-msg').classList.add('hidden');
+                
+                const inputWrapper = document.getElementById('popup-input-wrapper');
+                inputWrapper.classList.remove('hidden');
+                
+                const input = document.getElementById('popup-input');
+                input.value = defaultVal;
+                
+                input.oninput = null;
+                if (isNumeric) {
+                    input.oninput = function() {
+                        let v = this.value.replace(/\D/g, '');
+                        this.value = v ? new Intl.NumberFormat('id-ID').format(v) : '';
+                    };
+                    if(defaultVal) input.value = new Intl.NumberFormat('id-ID').format(defaultVal.toString().replace(/\D/g, ''));
+                }
+
+                const cancelBtn = document.getElementById('popup-cancel-btn');
+                cancelBtn.classList.remove('hidden');
+                cancelBtn.className = "bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 font-bold py-4 rounded-2xl text-xs uppercase shadow-sm active:scale-95 transition-all";
+                
+                const okBtn = document.getElementById('popup-ok-btn');
+                okBtn.className = "bg-blue-600 text-white font-bold py-4 rounded-2xl shadow-lg active:scale-95 transition-all text-xs uppercase";
+                
+                const modal = document.getElementById('global-popup-modal');
+                modal.classList.remove('hidden');
+                setTimeout(() => input.focus(), 50);
+
+                okBtn.onclick = () => { const val = input.value; modal.classList.add('hidden'); resolve(val); };
+                cancelBtn.onclick = () => { modal.classList.add('hidden'); resolve(null); };
+            });
+        }
 
         window.addEventListener('DOMContentLoaded', () => {
             if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -395,9 +543,9 @@
                     this.value = v ? new Intl.NumberFormat('id-ID').format(v) : '';
                 });
             };
-            ['amt', 'gTarget', 'dAmt', 'dtl-amt', 'dtl-goal-amt', 'dtl-debt-amt', 'm-edit-goal-target'].forEach(formatInp);
+            // Termasuk dtl-patungan-amt ke formatter
+            ['amt', 'gTarget', 'dAmt', 'dtl-amt', 'dtl-goal-amt', 'dtl-debt-amt', 'm-edit-goal-target', 'dtl-patungan-amt'].forEach(formatInp);
 
-            // AUTO SYNC DARI CLOUD SAAT HALAMAN DIBUKA (JIKA SUDAH LOGIN)
             if (db.profile && db.profile.isLoggedIn) {
                 fetchLatestFromCloud();
             }
@@ -410,10 +558,8 @@
             }
         }
 
-        // FUNGSI UTAMA SINKRONISASI DATA PENUH KE SPREADSHEET (MENGGUNAKAN RAW POST JSON PAYLOAD)
         async function syncToCloud() {
             if (!db.profile || !db.profile.isLoggedIn || !db.profile.email) return;
-
             try {
                 const payload = {
                     action: "sync",
@@ -421,65 +567,45 @@
                     txs: JSON.stringify(db.txs || []),
                     goals: JSON.stringify(db.goals || []),
                     debts: JSON.stringify(db.debts || []),
-                    customCategories: typeof db.customCategories === 'string' ? db.customCategories : JSON.stringify(db.customCategories || {}),
-                    incomeCategories: typeof db.incomeCategories === 'string' ? db.incomeCategories : JSON.stringify(db.incomeCategories || []),
-                    subCategories: typeof db.subCategories === 'string' ? db.subCategories : JSON.stringify(db.subCategories || {})
+                    patungan: JSON.stringify(db.patungan || []), // Sync patungan
+                    customCategories: JSON.stringify(db.customCategories || {}),
+                    incomeCategories: JSON.stringify(db.incomeCategories || []),
+                    subCategories: JSON.stringify(db.subCategories || {})
                 };
-
-                const response = await fetch(APPS_SCRIPT_URL, { 
+                await fetch(APPS_SCRIPT_URL, { 
                     method: 'POST', 
                     mode: 'cors',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify(payload)
                 });
-                
-                const resData = await response.json();
-                if (resData.status === "success") {
-                    console.log("Sinkronisasi database awan berhasil:", resData.message);
-                } else {
-                    console.error("Gagal sinkronisasi cloud:", resData.message);
-                }
-            } catch (e) {
-                console.error("Gagal interkoneksi sinkronisasi otomatis ke cloud:", e);
-            }
+            } catch (e) { console.error("Cloud sync failed:", e); }
         }
 
-        // FUNGSI UNTUK MENGAMBIL DATA TERBARU DARI CLOUD TANPA LOGOUT
         async function fetchLatestFromCloud() {
             if (!db.profile || !db.profile.isLoggedIn || !db.profile.email || !db.profile.pass) return;
-            console.log("Menyelaraskan data terbaru dari Cloud...");
-
             const params = new URLSearchParams();
             params.append('action', 'login');
             params.append('email', db.profile.email);
             params.append('password', db.profile.pass);
-
             try {
                 const response = await fetch(`${APPS_SCRIPT_URL}?${params.toString()}`, { method: 'GET' });
                 const result = await response.json();
-
                 if (result.status === 'success' && result.data) {
-                    if (result.data.txs && result.data.txs.length > 0) db.txs = result.data.txs;
-                    if (result.data.goals && result.data.goals.length > 0) db.goals = result.data.goals;
-                    if (result.data.debts && result.data.debts.length > 0) db.debts = result.data.debts;
-                    if (result.data.customCategories && Object.keys(result.data.customCategories).length > 0) db.customCategories = result.data.customCategories;
-                    if (result.data.incomeCategories && result.data.incomeCategories.length > 0) db.incomeCategories = result.data.incomeCategories;
-                    if (result.data.subCategories && Object.keys(result.data.subCategories).length > 0) db.subCategories = result.data.subCategories;
-
-                    localStorage.setItem(KEY, JSON.stringify(db));
-                    updateCategoryOptions();
-                    updateUI();
-                    console.log("Sinkronisasi latar belakang berhasil!");
+                    if (result.data.txs) db.txs = result.data.txs;
+                    if (result.data.goals) db.goals = result.data.goals;
+                    if (result.data.debts) db.debts = result.data.debts;
+                    if (result.data.patungan) db.patungan = result.data.patungan; // Fetch patungan
+                    if (result.data.customCategories) db.customCategories = result.data.customCategories;
+                    if (result.data.incomeCategories) db.incomeCategories = result.data.incomeCategories;
+                    if (result.data.subCategories) db.subCategories = result.data.subCategories;
+                    save(); updateCategoryOptions(); updateUI();
                 }
-            } catch (error) {
-                console.error("Gagal memuat data cloud di latar belakang:", error);
-            }
+            } catch (error) { console.error("Cloud fetch failed:", error); }
         }
 
         function applyTheme() {
             if(db.settings.darkMode) document.documentElement.classList.add('dark');
             else document.documentElement.classList.remove('dark');
-
             const circle = document.getElementById('dark-circle');
             const toggle = document.getElementById('dark-toggle');
             if(circle && toggle) {
@@ -489,107 +615,10 @@
         }
         function toggleDarkMode() { db.settings.darkMode = !db.settings.darkMode; save(); applyTheme(); }
 
-        // --- AUTH ---
-        function setAuthMode(mode) {
-            currentAuthMode = mode;
-            const regFields = document.getElementById('reg-fields'), t = document.getElementById('authFormTitle'), sub = document.getElementById('authSubTitle'), b = document.getElementById('btnText'), sw = document.getElementById('switchAuthBtn');
-            if (mode === 'login') {
-                t.innerText = "Selamat Datang"; sub.innerText = "Masuk ke Akun SakuMind Anda"; regFields.classList.add('hidden'); b.innerText = "Masuk (Login)"; sw.innerText = "Daftar sekarang";
-            } else {
-                t.innerText = "Daftar Baru"; sub.innerText = "Buat Akun SakuMind Anda"; regFields.classList.remove('hidden'); b.innerText = "Daftar"; sw.innerText = "Masuk disini";
-            }
-        }
-        function toggleAuthMode() { setAuthMode(currentAuthMode === 'login' ? 'register' : 'login'); }
-
-        document.getElementById('authForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('authBtn');
-            const loader = document.getElementById('btnLoader');
-            btn.disabled = true; loader.classList.remove('hidden');
-
-            const email = document.getElementById('prof-email').value;
-            const password = document.getElementById('prof-pass').value;
-            const name = document.getElementById('prof-name').value;
-            const nowa = document.getElementById('prof-wa') ? document.getElementById('prof-wa').value : '';
-            
-            const params = new URLSearchParams();
-            params.append('action', currentAuthMode === 'register' ? 'register' : 'login');
-            params.append('email', email);
-            params.append('password', password);
-            params.append('name', name);
-            params.append('nowa', nowa);
-
-            try {
-                const response = await fetch(`${APPS_SCRIPT_URL}?${params.toString()}`, { method: 'GET' });
-                const result = await response.json();
-
-                if (result.status === 'success') {
-                    if (currentAuthMode === 'login') {
-                        db.profile = { name: result.user.name, email: result.user.email, pass: password, isLoggedIn: true };
-                        
-                        if (result.data) {
-                            if (result.data.txs && result.data.txs.length > 0) db.txs = result.data.txs;
-                            if (result.data.goals && result.data.goals.length > 0) db.goals = result.data.goals;
-                            if (result.data.debts && result.data.debts.length > 0) db.debts = result.data.debts;
-                            if (result.data.customCategories && Object.keys(result.data.customCategories).length > 0) db.customCategories = result.data.customCategories;
-                            if (result.data.incomeCategories && result.data.incomeCategories.length > 0) db.incomeCategories = result.data.incomeCategories;
-                            if (result.data.subCategories && Object.keys(result.data.subCategories).length > 0) db.subCategories = result.data.subCategories;
-                        }
-                        
-                        if (!db.txs) db.txs = [];
-                        if (!db.goals) db.goals = [];
-                        if (!db.debts) db.debts = [];
-                        
-                        localStorage.setItem(KEY, JSON.stringify(db));
-                        document.getElementById('authForm').reset();
-                        updateCategoryOptions();
-                        updateUI();
-                        switchTab('input');
-                        alert("Login Berhasil! Sesi cloud & lokal aktif terhubung (Seluruh data disinkronisasi otomatis).");
-                    } else {
-                        alert(result.message);
-                        toggleAuthMode();
-                    }
-                } else {
-                    alert("Gagal: " + result.message);
-                }
-            } catch (error) {
-                alert("Masuk Sesi Lokal Berhasil! Sistem otomatis mengaktifkan database cadangan offline.");
-                db.profile = { name: email.split('@')[0], email: email, pass: password, isLoggedIn: true };
-                localStorage.setItem(KEY, JSON.stringify(db));
-                updateUI();
-                switchTab('input');
-            } finally {
-                btn.disabled = false; loader.classList.add('hidden');
-            }
-        });
-
-        function handleLogout() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlay');
-            if (sidebar) sidebar.classList.remove('open');
-            if (overlay) overlay.classList.remove('show');
-
-            setTimeout(() => {
-                let yakin = window.confirm('Apakah Anda yakin ingin keluar dari akun SakuMind?\n\nPERINGATAN: Karena data disimpan secara lokal, keluar akun akan mereset data di perangkat ini. Pastikan Anda tidak sengaja menghapus data browser.');
-                if (yakin) {
-                    executeLogout();
-                } else {
-                    if (sidebar && db.profile.isLoggedIn) sidebar.classList.add('open');
-                    if (overlay && db.profile.isLoggedIn) overlay.classList.add('show');
-                }
-            }, 150);
-        }
-
-        function executeLogout() {
-            db.profile = { name: '', email: '', pass: '', isLoggedIn: false };
-            db.txs = [];
-            db.goals = [];
-            db.debts = [];
-            
-            localStorage.setItem(KEY, JSON.stringify(db));
+        function toggleBalanceVisibility() {
+            db.settings.hideBalance = !db.settings.hideBalance;
+            save();
             updateUI();
-            window.location.reload(); 
         }
 
         function updateUI() {
@@ -598,18 +627,26 @@
                 auth.classList.add('hidden'); app.classList.remove('hidden');
                 document.getElementById('side-name').innerText = db.profile.name;
                 document.getElementById('side-email').innerText = db.profile.email;
+                
                 let inc = db.txs.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
                 let exp = db.txs.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
-                document.getElementById('totalBalance').innerText = `Rp ${(inc-exp).toLocaleString('id-ID')}`;
+                let balance = inc - exp;
                 
                 let debtTotal = db.debts.filter(d => d.type === 'hutang').reduce((sum, d) => sum + (d.amount - (d.payments ? d.payments.reduce((s,p)=>s+p.amount,0) : 0)), 0);
                 let recTotal = db.debts.filter(d => d.type === 'piutang').reduce((sum, d) => sum + (d.amount - (d.payments ? d.payments.reduce((s,p)=>s+p.amount,0) : 0)), 0);
                 
-                document.getElementById('totalDebt').innerText = `Rp ${debtTotal.toLocaleString('id-ID')}`;
-                document.getElementById('totalReceivable').innerText = `Rp ${recTotal.toLocaleString('id-ID')}`;
+                const isHidden = db.settings.hideBalance;
+                const eyeIcon = document.getElementById('eye-icon');
+                if (eyeIcon) {
+                    eyeIcon.setAttribute('data-lucide', isHidden ? 'eye-off' : 'eye');
+                }
+
+                document.getElementById('totalBalance').innerText = isHidden ? "••••••••" : `Rp ${balance.toLocaleString('id-ID')}`;
+                document.getElementById('totalDebt').innerText = isHidden ? "••••" : `Rp ${debtTotal.toLocaleString('id-ID')}`;
+                document.getElementById('totalReceivable').innerText = isHidden ? "••••" : `Rp ${recTotal.toLocaleString('id-ID')}`;
                 
                 let label = document.getElementById('st-label');
-                if((inc-exp) < 0) { label.innerText = "Kas Defisit!"; label.className = "text-[10px] font-bold text-red-300 text-center w-full"; }
+                if(balance < 0) { label.innerText = "Kas Defisit!"; label.className = "text-[10px] font-bold text-red-300 text-center w-full"; }
                 else { label.innerText = "Arus Kas Aman"; label.className = "text-[10px] font-bold text-green-300 text-center w-full"; }
             } else { auth.classList.remove('hidden'); app.classList.add('hidden'); sidebar.classList.remove('open'); overlay.classList.remove('show'); setAuthMode('login'); }
             if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -617,129 +654,57 @@
 
         function toggleSidebar() { if (!db.profile.isLoggedIn) return; document.getElementById('sidebar').classList.toggle('open'); document.getElementById('overlay').classList.toggle('show'); }
 
-        // --- SISTEM UPDATE MODAL MANAJEMEN KATEGORI BARU ---
+        // --- MANAGE CATEGORY ---
         function openManageCatModal() {
             const currentCat = document.getElementById('cat').value;
             const wrap = document.getElementById('m-edit-group-wrapper');
             const title = document.getElementById('manage-modal-title');
-            
             document.getElementById('m-edit-cat-name').value = currentCat || '';
-            
-            if(currentCat && db.subCategories[currentCat]) {
-                document.getElementById('m-edit-sub-list').value = db.subCategories[currentCat].join(', ');
-            } else {
-                document.getElementById('m-edit-sub-list').value = '';
-            }
-
-            if(currentType === 'income') { 
-                wrap.classList.add('hidden'); 
-                title.innerText = "Kelola Kategori Pemasukan"; 
-            } else { 
-                wrap.classList.remove('hidden'); 
-                title.innerText = "Kelola Kategori Pengeluaran"; 
-                
+            if(currentCat && db.subCategories[currentCat]) document.getElementById('m-edit-sub-list').value = db.subCategories[currentCat].join(', ');
+            else document.getElementById('m-edit-sub-list').value = '';
+            if(currentType === 'income') { wrap.classList.add('hidden'); title.innerText = "Kelola Kategori Pemasukan"; }
+            else { 
+                wrap.classList.remove('hidden'); title.innerText = "Kelola Kategori Pengeluaran"; 
                 let currentGroup = 'Kebutuhan';
-                for(let g in db.customCategories) {
-                    if(db.customCategories[g].includes(currentCat)) {
-                        currentGroup = g;
-                        break;
-                    }
-                }
+                for(let g in db.customCategories) if(db.customCategories[g].includes(currentCat)) currentGroup = g;
                 document.getElementById('m-edit-group').value = currentGroup;
             }
             document.getElementById('manage-cat-modal').classList.remove('hidden');
         }
+        function closeManageCatModal() { document.getElementById('manage-cat-modal').classList.add('hidden'); }
 
-        function closeManageCatModal() { 
-            document.getElementById('manage-cat-modal').classList.add('hidden'); 
-        }
-
-        function actionAddCategory() {
-            const n = document.getElementById('m-edit-cat-name').value.trim();
-            const sl = document.getElementById('m-edit-sub-list').value.trim();
-            const g = document.getElementById('m-edit-group').value;
-            
-            if(!n || !sl) return alert("Lengkapi Nama Kategori dan Daftar Item!");
+        async function actionAddCategory() {
+            const n = document.getElementById('m-edit-cat-name').value.trim(), sl = document.getElementById('m-edit-sub-list').value.trim(), g = document.getElementById('m-edit-group').value;
+            if(!n || !sl) return appAlert("Lengkapi Nama dan Daftar Item!");
             const subs = sl.split(',').map(s => s.trim()).filter(s => s !== "");
-            
-            if(currentType === 'expense') { 
-                if(db.customCategories[g].includes(n)) return alert("Kategori tersebut sudah ada!");
-                db.customCategories[g].push(n); 
-            } else { 
-                if(db.incomeCategories.includes(n)) return alert("Kategori tersebut sudah ada!");
-                db.incomeCategories.push(n); 
-            }
-            db.subCategories[n] = subs;
-            save(); updateCategoryOptions(); document.getElementById('cat').value = n; updateSubOptions(); closeManageCatModal();
-            alert(`Kategori "${n}" berhasil ditambahkan!`);
+            if(currentType === 'expense') { if(db.customCategories[g].includes(n)) return appAlert("Kategori sudah terdaftar!"); db.customCategories[g].push(n); }
+            else { if(db.incomeCategories.includes(n)) return appAlert("Kategori sudah terdaftar!"); db.incomeCategories.push(n); }
+            db.subCategories[n] = subs; save(); updateCategoryOptions(); document.getElementById('cat').value = n; updateSubOptions(); closeManageCatModal();
         }
 
-        function actionDeleteCategory() {
-            const targetCat = document.getElementById('cat').value;
-            if(!targetCat) return alert("Pilih kategori yang ingin dihapus terlebih dahulu!");
-            
-            let yakin = window.confirm(`Hapus kategori "${targetCat}"? Semua item di dalamnya juga akan hilang.`);
-            if(!yakin) return;
-            
-            if(db.incomeCategories.includes(targetCat)) {
-                db.incomeCategories = db.incomeCategories.filter(x => x !== targetCat);
-            } else { 
-                for(let g in db.customCategories) { 
-                    if(db.customCategories[g].includes(targetCat)) {
-                        db.customCategories[g] = db.customCategories[g].filter(x => x !== targetCat);
-                    }
-                } 
-            }
+        async function actionDeleteCategory() {
+            const targetCat = document.getElementById('cat').value; if(!targetCat) return;
+            const confirmDel = await appConfirm(`Hapus kategori "${targetCat}"?`);
+            if(!confirmDel) return;
+            if(db.incomeCategories.includes(targetCat)) db.incomeCategories = db.incomeCategories.filter(x => x !== targetCat);
+            else { for(let g in db.customCategories) db.customCategories[g] = db.customCategories[g].filter(x => x !== targetCat); }
             if(db.subCategories[targetCat]) delete db.subCategories[targetCat];
-            
             save(); updateCategoryOptions(); closeManageCatModal();
-            alert(`Kategori "${targetCat}" berhasil dihapus.`);
         }
 
         function actionSaveCategoryEdit() {
-            const oldCat = document.getElementById('cat').value;
-            if(!oldCat) return alert("Tidak ada kategori yang dipilih!");
-
-            const newName = document.getElementById('m-edit-cat-name').value.trim();
-            const sl = document.getElementById('m-edit-sub-list').value.trim();
-            const newGroup = document.getElementById('m-edit-group').value;
-
-            if(!newName || !sl) return alert("Nama kategori dan Daftar Item tidak boleh kosong!");
+            const oldCat = document.getElementById('cat').value, newName = document.getElementById('m-edit-cat-name').value.trim(), sl = document.getElementById('m-edit-sub-list').value.trim(), newGroup = document.getElementById('m-edit-group').value;
+            if(!newName || !sl) return;
             const subs = sl.split(',').map(s => s.trim()).filter(s => s !== "");
-
-            if(currentType === 'income') {
-                if (oldCat !== newName && db.incomeCategories.includes(newName)) return alert("Nama kategori sudah digunakan!");
-                db.incomeCategories = db.incomeCategories.map(c => c === oldCat ? newName : c);
-            } else {
-                for(let g in db.customCategories) {
-                    db.customCategories[g] = db.customCategories[g].filter(x => x !== oldCat);
-                }
-                if(!db.customCategories[newGroup].includes(newName)) {
-                    db.customCategories[newGroup].push(newName);
-                }
-            }
-
-            if(oldCat !== newName) {
-                db.subCategories[newName] = subs;
-                delete db.subCategories[oldCat];
-            } else {
-                db.subCategories[oldCat] = subs;
-            }
-
-            db.txs.forEach(t => {
-                if(t.type === currentType && t.category === oldCat) {
-                    t.category = newName;
-                    if(currentType === 'expense') t.group = newGroup;
-                }
-            });
-
+            if(currentType === 'income') db.incomeCategories = db.incomeCategories.map(c => c === oldCat ? newName : c);
+            else { for(let g in db.customCategories) db.customCategories[g] = db.customCategories[g].filter(x => x !== oldCat); db.customCategories[newGroup].push(newName); }
+            if(oldCat !== newName) { db.subCategories[newName] = subs; delete db.subCategories[oldCat]; } else db.subCategories[oldCat] = subs;
+            db.txs.forEach(t => { if(t.type === currentType && t.category === oldCat) { t.category = newName; if(currentType === 'expense') t.group = newGroup; }});
             save(); updateCategoryOptions(); document.getElementById('cat').value = newName; updateSubOptions(); closeManageCatModal();
-            alert("Perubahan kategori berhasil disimpan!");
         }
 
         function updateCategoryOptions() {
-            const select = document.getElementById('cat');
-            if(!select) return;
+            const select = document.getElementById('cat'); if(!select) return;
             if(currentType === 'income') select.innerHTML = db.incomeCategories.map(c => `<option value="${c}">${c}</option>`).join('');
             else {
                 let html = '';
@@ -749,12 +714,10 @@
             updateSubOptions();
         }
         function updateSubOptions() {
-            const c = document.getElementById('cat').value;
-            const subs = db.subCategories[c] || ['Umum'];
+            const c = document.getElementById('cat').value; const subs = db.subCategories[c] || ['Umum'];
             document.getElementById('subcat').innerHTML = subs.map(s => `<option value="${s}">${s}</option>`).join('');
         }
 
-        // --- TRANSAKSI ---
         function setType(t) {
             currentType = t;
             document.getElementById('btn-expense').className = t === 'expense' ? "flex-1 py-2 rounded-xl text-sm font-bold bg-white text-red-600 shadow-sm transition-all" : "flex-1 py-2 text-sm font-bold text-slate-500 transition-all";
@@ -763,58 +726,37 @@
             updateCategoryOptions();
         }
 
-        function parseLocalDateString(dateStr) {
-            if(!dateStr) return null;
-            const parts = dateStr.split('/');
-            if(parts.length !== 3) return null;
-            return new Date(parts[2], parts[1] - 1, parts[0]);
-        }
-
-        document.getElementById('txForm').addEventListener('submit', (e) => {
+        document.getElementById('txForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const amt = parseInt(document.getElementById('amt').value.replace(/\D/g, ''));
             const cat = document.getElementById('cat').value;
-            if(!amt) return alert("Masukkan nominal!");
-            let g = 'Pemasukan';
-            if(currentType === 'expense') { for(let k in db.customCategories) if(db.customCategories[k].includes(cat)) g = k; }
+            if(!amt) { await appAlert("Masukkan nominal transaksi!"); return; }
+            let g = 'Pemasukan'; if(currentType === 'expense') { for(let k in db.customCategories) if(db.customCategories[k].includes(cat)) g = k; }
             db.txs.push({ id: Date.now(), type: currentType, amount: amt, group: g, category: cat, subcat: document.getElementById('subcat').value, date: new Date().toLocaleDateString('id-ID') });
-            save(); updateUI(); document.getElementById('txForm').reset(); setType(currentType); alert('Berhasil!');
+            save(); updateUI(); document.getElementById('txForm').reset(); setType(currentType);
         });
 
+        // Tab patungan ditambahkan
         function switchTab(tab) {
-            ['input', 'history', 'analysis', 'goals', 'debt'].forEach(t => {
-                const sec = document.getElementById('section-' + t);
-                const btn = document.getElementById('tab-' + t);
+            ['input', 'history', 'analysis', 'goals', 'debt', 'patungan'].forEach(t => {
+                const sec = document.getElementById('section-' + t), btn = document.getElementById('tab-' + t);
                 if(sec) sec.classList.add('hidden');
                 if(btn) btn.className = "flex-none px-6 py-4 text-slate-400";
             });
             document.getElementById('section-' + tab).classList.remove('hidden');
             document.getElementById('tab-' + tab).className = "flex-none px-6 py-4 tab-active";
-            if(tab === 'history') renderHistory(); if(tab === 'analysis') renderAnalysis(); if(tab === 'goals') renderGoals(); if(tab === 'debt') renderDebts();
+            if(tab === 'history') renderHistory(); if(tab === 'analysis') renderAnalysis(); if(tab === 'goals') renderGoals(); if(tab === 'debt') renderDebts(); if(tab === 'patungan') renderPatungan();
         }
 
-        // --- RENDER VISUAL DATA ---
         function renderAnalysis() {
             let sums = { Kebutuhan: 0, Keinginan: 0, Investasi: 0 };
-            const startVal = document.getElementById('anaDateStart').value;
-            const endVal = document.getElementById('anaDateEnd').value;
-            
-            const startDate = startVal ? new Date(startVal) : null;
-            const endDate = endVal ? new Date(endVal) : null;
-            if(startDate) startDate.setHours(0,0,0,0);
-            if(endDate) endDate.setHours(23,59,59,999);
-
+            const sVal = document.getElementById('anaDateStart').value, eVal = document.getElementById('anaDateEnd').value;
+            const startDate = sVal ? new Date(sVal) : null, endDate = eVal ? new Date(eVal) : null;
             db.txs.filter(t => t.type === 'expense').forEach(t => { 
                 let tDate = parseLocalDateString(t.date);
-                if(tDate) tDate.setHours(0,0,0,0);
-
-                let passFilter = true;
-                if(startDate && (!tDate || tDate < startDate)) passFilter = false;
-                if(endDate && (!tDate || tDate > endDate)) passFilter = false;
-
-                if(passFilter && sums[t.group] !== undefined) {
-                    sums[t.group] += t.amount; 
-                }
+                if(startDate && tDate < startDate) return;
+                if(endDate && tDate > endDate) return;
+                if(sums[t.group] !== undefined) sums[t.group] += t.amount; 
             });
             for(let k in sums) document.getElementById('sum-' + k.toLowerCase()).innerText = `Rp ${sums[k].toLocaleString('id-ID')}`;
         }
@@ -822,310 +764,340 @@
         function renderHistory() {
             const cont = document.getElementById('txList'); cont.innerHTML = '';
             const q = document.getElementById('srch').value.toLowerCase();
-            const startVal = document.getElementById('fDateStart').value;
-            const endVal = document.getElementById('fDateEnd').value;
-            
-            const startDate = startVal ? new Date(startVal) : null;
-            const endDate = endVal ? new Date(endVal) : null;
-            if(startDate) startDate.setHours(0,0,0,0);
-            if(endDate) endDate.setHours(23,59,59,999);
-
             db.txs.slice().reverse().forEach(t => {
-                let tDate = parseLocalDateString(t.date);
-                if(tDate) tDate.setHours(0,0,0,0);
-
-                let passFilter = true;
-                if(startDate && (!tDate || tDate < startDate)) passFilter = false;
-                if(endDate && (!tDate || tDate > endDate)) passFilter = false;
-                if(q && !(t.category.toLowerCase().includes(q) || (t.subcat && t.subcat.toLowerCase().includes(q)))) passFilter = false;
-
-                if(passFilter) {
-                    const isEx = t.type === 'expense';
-                    cont.innerHTML += `<div onclick="openTxDetail(${t.id})" class="bg-white dark:bg-slate-800 p-4 rounded-3xl border border-slate-50 dark:border-slate-700 flex justify-between items-center shadow-sm cursor-pointer active:scale-[0.98] transition-all">
-                        <div>
-                            <span class="text-[9px] px-2 py-0.5 rounded-full font-bold uppercase ${isEx?'bg-red-50 text-red-600':'bg-green-50 text-green-600'}">${t.category}</span>
-                            <h4 class="font-bold text-sm dark:text-white mt-1">${t.subcat}</h4>
-                            <p class="text-[10px] text-slate-400">${t.date}</p>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span class="font-bold text-sm ${isEx?'text-red-500':'text-green-500'}">${isEx?'-':'+'} Rp ${t.amount.toLocaleString('id-ID')}</span>
-                            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300"></i>
-                        </div>
-                    </div>`;
-                }
-            }); if (typeof lucide !== 'undefined') lucide.createIcons();
+                if(q && !t.category.toLowerCase().includes(q) && !t.subcat.toLowerCase().includes(q)) return;
+                const isEx = t.type === 'expense';
+                cont.innerHTML += `<div onclick="openTxDetail(${t.id})" class="bg-white dark:bg-slate-800 p-4 rounded-3xl border border-slate-50 dark:border-slate-700 flex justify-between items-center shadow-sm cursor-pointer active:scale-[0.98]">
+                    <div>
+                        <span class="text-[9px] px-2 py-0.5 rounded-full font-bold uppercase ${isEx?'bg-red-50 text-red-600':'bg-green-50 text-green-600'}">${t.category}</span>
+                        <h4 class="font-bold text-sm dark:text-white mt-1">${t.subcat}</h4>
+                        <p class="text-[10px] text-slate-400">${t.date}</p>
+                    </div>
+                    <span class="font-bold text-sm ${isEx?'text-red-500':'text-green-500'}">${isEx?'-':'+'} Rp ${t.amount.toLocaleString('id-ID')}</span>
+                </div>`;
+            }); lucide.createIcons();
         }
 
-        // --- TABUNGAN IMPIAN ---
+        // --- GOALS ---
         function addGoal() { 
             const n = document.getElementById('gName').value, t = parseInt(document.getElementById('gTarget').value.replace(/\D/g, '')); 
-            if(n && t > 0) { 
-                db.goals.push({ id: Date.now(), name: n, target: t, saved: 0, targetHistory: [] }); 
-                save(); renderGoals(); 
-                document.getElementById('gName').value=''; document.getElementById('gTarget').value=''; 
-            } 
+            if(n && t > 0) { db.goals.push({ id: Date.now(), name: n, target: t, saved: 0, targetHistory: [] }); save(); renderGoals(); } 
         }
-
-        function saveToGoal(id) { 
-            let v = parseInt((prompt("Nominal tabungan:") || "").replace(/\D/g, '')); 
+        async function saveToGoal(id) { 
+            let pVal = await appPrompt("Nominal Tabungan:", "", true); 
+            let v = parseInt((pVal || "").replace(/\D/g, '')); 
             if(v > 0) { 
-                let g = db.goals.find(x => x.id === id);
-                if(!g.targetHistory) g.targetHistory = [];
+                let g = db.goals.find(x => x.id === id); if(!g.targetHistory) g.targetHistory = [];
                 g.targetHistory.push({ id: Date.now(), amount: v, date: new Date().toLocaleDateString('id-ID') });
-                g.saved = g.targetHistory.reduce((s, p) => s + p.amount, 0);
-                save(); renderGoals(); 
+                g.saved = g.targetHistory.reduce((s, p) => s + p.amount, 0); save(); renderGoals(); 
             } 
         }
-
         function renderGoals() {
             const c = document.getElementById('goalCards'); c.innerHTML = '';
             db.goals.forEach(g => {
-                if(!g.targetHistory) g.targetHistory = g.saved > 0 ? [{ id: Date.now(), amount: g.saved, date: 'Saldo Awal' }] : [];
-                let currentSaved = g.targetHistory.reduce((s, p) => s + p.amount, 0);
-                g.saved = currentSaved;
                 let p = Math.min((g.saved / g.target) * 100, 100);
-                
-                let historyHtml = g.targetHistory.map(h => `
-                    <div onclick="openGoalHistoryDetail(${g.id}, ${h.id})" class="flex justify-between items-center text-[10px] text-slate-500 border-b border-slate-50 dark:border-slate-700 py-1.5 cursor-pointer active:scale-[0.98] transition-all hover:bg-slate-50 dark:hover:bg-slate-800 rounded px-1">
-                        <span>${h.date}</span>
-                        <div class="flex items-center gap-1.5">
-                            <span class="font-bold text-blue-600">Rp ${h.amount.toLocaleString('id-ID')}</span>
-                            <i data-lucide="chevron-right" class="w-3 h-3 text-slate-300"></i>
-                        </div>
+                let hist = (g.targetHistory || []).map(h => `<div onclick="openGoalHistoryDetail(${g.id}, ${h.id})" class="flex justify-between items-center text-[10px] py-1 border-b border-slate-50 dark:border-slate-700 cursor-pointer"><span>${h.date}</span><span class="text-blue-600">Rp ${h.amount.toLocaleString('id-ID')}</span></div>`).join('');
+                c.innerHTML += `<div class="bg-white dark:bg-slate-800 p-5 rounded-3xl border dark:border-slate-700 shadow-sm space-y-4">
+                    <div class="flex justify-between">
+                        <div><h4 class="font-bold text-lg dark:text-white">${g.name}</h4><p class="text-xs text-slate-400">Target: Rp ${g.target.toLocaleString('id-ID')}</p></div>
+                        <div class="flex gap-1"><button onclick="saveToGoal(${g.id})" class="bg-blue-50 text-blue-600 px-3 py-1 rounded-xl text-[10px] font-bold uppercase">+ Tambah</button><button onclick="openManageGoalModal(${g.id})" class="p-2 text-slate-400"><i data-lucide="edit-2" class="w-4 h-4"></i></button></div>
                     </div>
-                `).join('');
-
-                c.innerHTML += `<div class="bg-white dark:bg-slate-800 p-5 rounded-3xl border dark:border-slate-700 shadow-sm space-y-4 text-slate-800 dark:text-white">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h4 class="font-bold text-lg dark:text-white">${g.name}</h4>
-                            <p class="text-xs font-bold text-slate-400">Target: Rp ${g.target.toLocaleString('id-ID')}</p>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <button onclick="saveToGoal(${g.id})" class="bg-blue-50 text-blue-600 px-3 py-1.5 rounded-xl text-[10px] font-bold tracking-wider uppercase">+ Tambah</button>
-                            <button onclick="openManageGoalModal(${g.id})" class="p-2 text-slate-400 hover:text-blue-500 transition-colors" title="Kelola Impian">
-                                <i data-lucide="edit-2" class="w-4 h-4"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="w-full bg-slate-100 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
-                        <div class="bg-blue-600 h-full" style="width:${p}%"></div>
-                    </div>
-                    <div class="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-2xl space-y-1">
-                        <p class="text-[9px] font-bold text-slate-400 uppercase mb-1">Riwayat Menabung</p>
-                        ${historyHtml || '<p class="text-[10px] text-slate-400 italic">Belum ada riwayat setoran</p>'}
-                    </div>
-                    <div class="pt-1 flex justify-between items-center">
-                        <span class="text-[10px] font-bold text-slate-400 uppercase">Terkumpul</span>
-                        <span class="font-bold text-lg text-emerald-500">Rp ${g.saved.toLocaleString('id-ID')}</span>
-                    </div>
+                    <div class="w-full bg-slate-100 dark:bg-slate-700 h-2 rounded-full"><div class="bg-blue-600 h-full" style="width:${p}%"></div></div>
+                    <div class="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-2xl">${hist || '<p class="text-[10px] text-slate-400 italic">Kosong</p>'}</div>
+                    <div class="flex justify-between items-center"><span class="text-[10px] font-bold text-slate-400">TERKUMPUL</span><span class="font-bold text-lg text-emerald-500">Rp ${g.saved.toLocaleString('id-ID')}</span></div>
                 </div>`;
-            }); if (typeof lucide !== 'undefined') lucide.createIcons();
+            }); lucide.createIcons();
         }
 
-        let currentManageGoalId = null;
+        let currentMGoalId = null;
         function openManageGoalModal(id) {
             const g = db.goals.find(x => x.id === id); if(!g) return;
-            currentManageGoalId = id;
-            document.getElementById('m-edit-goal-name').value = g.name;
-            document.getElementById('m-edit-goal-target').value = new Intl.NumberFormat('id-ID').format(g.target);
+            currentMGoalId = id; document.getElementById('m-edit-goal-name').value = g.name; document.getElementById('m-edit-goal-target').value = new Intl.NumberFormat('id-ID').format(g.target);
             document.getElementById('manage-goal-modal').classList.remove('hidden');
         }
+
+        // FUNGSI INI DITAMBAHKAN AGAR TOMBOL BATAL/TUTUP DI TABUNGAN BISA BERFUNGSI
         function closeManageGoalModal() {
             document.getElementById('manage-goal-modal').classList.add('hidden');
-            currentManageGoalId = null;
-        }
-        function actionSaveGoalEdit() {
-            if(!currentManageGoalId) return;
-            const name = document.getElementById('m-edit-goal-name').value.trim();
-            const targetStr = document.getElementById('m-edit-goal-target').value.replace(/\D/g, '');
-            const target = parseInt(targetStr);
-            
-            if(!name || !target) return alert("Nama Impian dan Target Dana tidak boleh kosong!");
-            
-            let g = db.goals.find(x => x.id === currentManageGoalId);
-            if(g) {
-                g.name = name;
-                g.target = target;
-                save(); renderGoals(); closeManageGoalModal();
-                alert("Perubahan target impian berhasil disimpan!");
-            }
-        }
-        function actionDeleteGoal() {
-            if(!currentManageGoalId) return;
-            if(confirm("Apakah Anda yakin ingin menghapus target impian ini? Semua riwayat setoran di dalamnya akan ikut terhapus.")) {
-                db.goals = db.goals.filter(x => x.id !== currentManageGoalId);
-                save(); renderGoals(); closeManageGoalModal();
-                alert("Impian berhasil dihapus.");
-            }
         }
 
-        // --- HUTANG PIUTANG ---
+        function actionSaveGoalEdit() {
+            if(!currentMGoalId) return;
+            const n = document.getElementById('m-edit-goal-name').value.trim(), t = parseInt(document.getElementById('m-edit-goal-target').value.replace(/\D/g, ''));
+            let g = db.goals.find(x => x.id === currentMGoalId); if(g) { g.name = n; g.target = t; save(); renderGoals(); document.getElementById('manage-goal-modal').classList.add('hidden'); }
+        }
+        async function actionDeleteGoal() {
+            if(!currentMGoalId) return;
+            const confirmDel = await appConfirm("Hapus target impian ini?");
+            if(!confirmDel) return;
+            db.goals = db.goals.filter(x => x.id !== currentMGoalId); save(); renderGoals(); document.getElementById('manage-goal-modal').classList.add('hidden');
+        }
+
+        // --- DEBTS ---
         function addDebt() {
             const p = document.getElementById('dPerson').value, a = parseInt(document.getElementById('dAmt').value.replace(/\D/g, '')), t = document.getElementById('dType').value;
-            if(p && a > 0) { 
-                db.debts.push({ id: Date.now(), person: p, amount: a, type: t, payments: [] }); 
-                save(); renderDebts(); updateUI(); 
-                document.getElementById('dPerson').value=''; document.getElementById('dAmt').value=''; 
-            }
+            if(p && a > 0) { db.debts.push({ id: Date.now(), person: p, amount: a, type: t, payments: [] }); save(); renderDebts(); updateUI(); }
         }
-
         function renderDebts() {
             const c = document.getElementById('debtCards'); c.innerHTML = '';
             db.debts.forEach(d => {
-                if(!d.payments) d.payments = [];
-                let paid = d.payments.reduce((s, p) => s + p.amount, 0);
-                let remaining = d.amount - paid;
-                
-                let historyHtml = d.payments.map(p => `
-                    <div onclick="openDebtHistoryDetail(${d.id}, ${p.id})" class="flex justify-between items-center text-[10px] text-slate-500 border-b border-slate-50 dark:border-slate-700 py-1.5 cursor-pointer active:scale-[0.98] transition-all hover:bg-slate-50 dark:hover:bg-slate-800 rounded px-1">
-                        <span>${p.date}</span>
-                        <div class="flex items-center gap-1.5">
-                            <span class="font-bold text-green-600">Rp ${p.amount.toLocaleString('id-ID')}</span>
-                            <i data-lucide="chevron-right" class="w-3 h-3 text-slate-300"></i>
-                        </div>
-                    </div>
-                `).join('');
-
+                let paid = (d.payments || []).reduce((s, p) => s + p.amount, 0); let rem = d.amount - paid;
+                let hist = (d.payments || []).map(p => `<div onclick="openDebtHistoryDetail(${d.id}, ${p.id})" class="flex justify-between items-center text-[10px] py-1 border-b border-slate-50 dark:border-slate-700 cursor-pointer"><span>${p.date}</span><span class="text-green-600">Rp ${p.amount.toLocaleString('id-ID')}</span></div>`).join('');
                 c.innerHTML += `<div class="bg-white dark:bg-slate-800 p-5 rounded-3xl border dark:border-slate-700 shadow-sm space-y-4">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <span class="text-[9px] px-2 py-0.5 rounded-full font-bold uppercase ${d.type==='hutang'?'bg-orange-100 text-orange-600':'bg-purple-100 text-purple-600'}">${d.type}</span>
-                            <h4 class="font-bold text-lg dark:text-white mt-1">${d.person}</h4>
-                            <p class="text-xs text-slate-400 font-bold">Pinjaman: Rp ${d.amount.toLocaleString('id-ID')}</p>
-                        </div>
-                        <div class="flex gap-1">
-                            <button onclick="editDebt(${d.id})" class="p-2 text-slate-400 hover:text-blue-500"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
-                            <button onclick="deleteDebt(${d.id})" class="p-2 text-slate-400 hover:text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                        </div>
+                    <div class="flex justify-between">
+                        <div><span class="text-[9px] px-2 py-0.5 rounded-full font-bold uppercase ${d.type==='hutang'?'bg-orange-100 text-orange-600':'bg-purple-100 text-purple-600'}">${d.type}</span><h4 class="font-bold text-lg dark:text-white mt-1">${d.person}</h4><p class="text-xs text-slate-400">Pinjaman: Rp ${d.amount.toLocaleString('id-ID')}</p></div>
+                        <div class="flex gap-1"><button onclick="editDebt(${d.id})" class="p-2 text-slate-400"><i data-lucide="edit-2" class="w-4 h-4"></i></button><button onclick="deleteDebt(${d.id})" class="p-2 text-slate-400"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>
                     </div>
-                    <div class="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-2xl space-y-1">
-                        <p class="text-[9px] font-bold text-slate-400 uppercase mb-2">Riwayat Bayar</p>
-                        ${historyHtml || '<p class="text-[10px] text-slate-400 italic">Belum ada cicilan</p>'}
-                    </div>
-                    <div class="flex justify-between items-end border-t dark:border-slate-700 pt-3">
-                        <div><p class="text-[10px] font-bold text-slate-400 uppercase">Sisa</p><p class="text-xl font-bold text-blue-600">Rp ${remaining.toLocaleString('id-ID')}</p></div>
-                        <button onclick="payDebtStep(${d.id})" class="bg-green-500 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg shadow-green-100 active:scale-95 transition-all">BAYAR</button>
-                    </div>
+                    <div class="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-2xl">${hist || '<p class="text-[10px] text-slate-400 italic">Kosong</p>'}</div>
+                    <div class="flex justify-between items-end"><div><p class="text-[10px] font-bold text-slate-400">SISA</p><p class="text-xl font-bold text-blue-600">Rp ${rem.toLocaleString('id-ID')}</p></div><button onclick="payDebtStep(${d.id})" class="bg-green-500 text-white px-4 py-2 rounded-xl text-xs font-bold">BAYAR</button></div>
                 </div>`;
-            }); if (typeof lucide !== 'undefined') lucide.createIcons();
+            }); lucide.createIcons();
         }
 
-        function payDebtStep(id) {
-            let v = parseInt((prompt("Nominal yang dibayar:") || "").replace(/\D/g, ''));
+        async function payDebtStep(id) {
+            let pVal = await appPrompt("Nominal Pembayaran:", "", true);
+            let v = parseInt((pVal || "").replace(/\D/g, ''));
             if(v > 0) {
-                let d = db.debts.find(x => x.id === id);
-                if(!d.payments) d.payments = [];
+                let d = db.debts.find(x => x.id === id); if(!d.payments) d.payments = [];
                 d.payments.push({ id: Date.now(), amount: v, date: new Date().toLocaleDateString('id-ID') });
-                let paid = d.payments.reduce((s, p) => s + p.amount, 0);
-                if(paid >= d.amount) { if(confirm('Hutang sudah lunas! Hapus dari daftar?')) db.debts = db.debts.filter(x => x.id !== id); }
+                if(d.payments.reduce((s,p)=>s+p.amount,0) >= d.amount) {
+                    const confirmClean = await appConfirm('Pembayaran Lunas! Hapus buku catatan ini?');
+                    if(confirmClean) db.debts = db.debts.filter(x => x.id !== id);
+                }
                 save(); renderDebts(); updateUI();
             }
         }
+        async function editDebt(id) { 
+            let d = db.debts.find(x => x.id === id); 
+            let n = await appPrompt("Ubah Nama Orang:", d.person, false); 
+            let a = await appPrompt("Ubah Nominal Pinjaman:", d.amount, true); 
+            if(n) d.person = n; 
+            if(a) d.amount = parseInt(a.replace(/\D/g, '')); 
+            save(); renderDebts(); updateUI(); 
+        }
+        async function deleteDebt(id) { 
+            const confirmDel = await appConfirm('Hapus buku catatan hutang ini?');
+            if(confirmDel) { db.debts = db.debts.filter(x => x.id !== id); save(); renderDebts(); updateUI(); } 
+        }
 
-        function editDebt(id) {
-            let d = db.debts.find(x => x.id === id);
-            let n = prompt("Edit Nama Orang:", d.person);
-            let a = prompt("Edit Nominal Awal (Rp):", d.amount);
-            if(n) d.person = n;
-            if(a) d.amount = parseInt(a.replace(/\D/g, ''));
-            save(); renderDebts(); updateUI();
-        }
-        function deleteDebt(id) { if(confirm('Hapus catatan ini?')) { db.debts = db.debts.filter(x => x.id !== id); save(); renderDebts(); updateUI(); } }
+        // --- PATUNGAN (BARU) ---
+        async function addPatungan() {
+            const isTarget = await new Promise((resolve) => {
+                const modal = document.getElementById('patungan-choice-modal');
+                modal.classList.remove('hidden');
+                window.handlePatunganChoice = (val) => {
+                    modal.classList.add('hidden');
+                    resolve(val);
+                };
+            });
 
-        // --- SISTEM RINCIAN MODAL UTAMA ---
-        let currentDetailId = null;
-        function openTxDetail(id) {
-            const tx = db.txs.find(t => t.id === id); if (!tx) return;
-            currentDetailId = id;
-            document.getElementById('dtl-amt').value = new Intl.NumberFormat('id-ID').format(tx.amount);
-            document.getElementById('dtl-subcat').value = tx.subcat;
-            document.getElementById('dtl-date').value = tx.date;
-            document.getElementById('tx-detail-modal').classList.remove('hidden');
-        }
-        function closeTxDetail() { document.getElementById('tx-detail-modal').classList.add('hidden'); currentDetailId = null; }
-        function saveTxDetail() {
-            if (!currentDetailId) return;
-            const amtStr = document.getElementById('dtl-amt').value.replace(/\D/g, ''), newAmt = parseInt(amtStr), newSubcat = document.getElementById('dtl-subcat').value.trim(), newDate = document.getElementById('dtl-date').value.trim();
-            if (!newAmt || !newSubcat) return alert("Nominal dan Nama Item tidak boleh kosong!");
-            const txIndex = db.txs.findIndex(t => t.id === currentDetailId);
-            if (txIndex !== -1) { db.txs[txIndex].amount = newAmt; db.txs[txIndex].subcat = newSubcat; db.txs[txIndex].date = newDate; save(); renderHistory(); updateUI(); closeTxDetail(); }
-        }
-        function deleteTxDetail() { if (!currentDetailId) return; if (confirm("Apakah Anda yakin ingin menghapus transaksi ini?")) { db.txs = db.txs.filter(x => x.id !== currentDetailId); save(); renderHistory(); updateUI(); closeTxDetail(); } }
+            let target = 0;
+            if (isTarget) {
+                let tVal = await appPrompt("Masukkan Target Dana (Rp):", "", true);
+                if(!tVal) return;
+                target = parseInt(tVal.replace(/\D/g, ''));
+                if(target <= 0) return appAlert("Target tidak valid.");
+            }
 
-        // --- DETIL SETORAN TABUNGAN ---
-        let currentGoalId = null, currentGoalHistoryId = null;
-        function openGoalHistoryDetail(goalId, historyId) {
-            let g = db.goals.find(x => x.id === goalId); if(!g) return;
-            let h = g.targetHistory.find(x => x.id === historyId); if(!h) return;
-            currentGoalId = goalId; currentGoalHistoryId = historyId;
-            document.getElementById('dtl-goal-amt').value = new Intl.NumberFormat('id-ID').format(h.amount);
-            document.getElementById('dtl-goal-date').value = h.date;
-            document.getElementById('goal-detail-modal').classList.remove('hidden');
+            let name = await appPrompt("Masukkan Nama Kartu Patungan:", "Patungan Baru", false);
+            if (!name) return;
+
+            db.patungan.push({
+                id: Date.now(),
+                name: name,
+                target: target,
+                collected: 0,
+                members: [db.profile.email],
+                history: []
+            });
+            save();
+            renderPatungan();
         }
-        function closeGoalHistoryDetail() { document.getElementById('goal-detail-modal').classList.add('hidden'); currentGoalId = null; currentGoalHistoryId = null; }
-        function saveGoalHistoryDetail() {
-            if(!currentGoalId || !currentGoalHistoryId) return;
-            const amtStr = document.getElementById('dtl-goal-amt').value.replace(/\D/g, ''), newAmt = parseInt(amtStr), newDate = document.getElementById('dtl-goal-date').value.trim();
-            if(!newAmt) return alert("Nominal tidak boleh kosong!");
-            let g = db.goals.find(x => x.id === currentGoalId);
-            if(g) { let h = g.targetHistory.find(x => x.id === currentGoalHistoryId); if(h) { h.amount = newAmt; h.date = newDate; g.saved = g.targetHistory.reduce((s, p) => s + p.amount, 0); save(); renderGoals(); closeGoalHistoryDetail(); } }
+
+        function renderPatungan() {
+            const c = document.getElementById('patunganCards');
+            if(!c) return;
+            c.innerHTML = '';
+            (db.patungan || []).forEach(p => {
+                let progress = p.target > 0 ? Math.min((p.collected / p.target) * 100, 100) : 0;
+                let hist = (p.history || []).map(h => `<div onclick="openPatunganHistoryDetail(${p.id}, ${h.id})" class="flex justify-between items-center text-[10px] py-1 border-b border-slate-50 dark:border-slate-700 cursor-pointer"><span>${h.date} (${h.sender})</span><span class="text-indigo-600 font-bold">Rp ${h.amount.toLocaleString('id-ID')}</span></div>`).join('');
+
+                let targetHtml = p.target > 0 ? `<p class="text-xs text-slate-400">Target: Rp ${p.target.toLocaleString('id-ID')}</p>` : `<p class="text-[10px] text-slate-400 italic">Batal</p>`;
+                let progressHtml = p.target > 0 ? `<div class="w-full bg-slate-100 dark:bg-slate-700 h-2 rounded-full my-2"><div class="bg-indigo-600 h-full rounded-full transition-all" style="width:${progress}%"></div></div>` : '';
+
+                // PENAMBAHAN TOMBOL EDIT DAN HAPUS PATUNGAN
+                c.innerHTML += `<div class="bg-white dark:bg-slate-800 p-5 rounded-3xl border dark:border-slate-700 shadow-sm space-y-4">
+                    <div class="flex justify-between items-start gap-2">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-1 mb-1">
+                                <h4 class="font-bold text-lg dark:text-white leading-tight">${p.name}</h4>
+                                <button onclick="editPatungan(${p.id})" class="p-1.5 text-slate-400 hover:text-indigo-500 transition-colors"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+                                <button onclick="deletePatungan(${p.id})" class="p-1.5 text-slate-400 hover:text-red-500 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                            </div>
+                            ${targetHtml}
+                            <p class="text-[9px] text-slate-400 mt-2 line-clamp-1"><span class="font-bold">Anggota:</span> ${p.members.join(', ')}</p>
+                        </div>
+                        <div class="flex flex-col gap-2 shrink-0">
+                            <button onclick="inviteFriend(${p.id})" class="bg-slate-50 text-slate-600 px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase w-full shadow-sm active:scale-95 transition-all flex items-center justify-center gap-1"><i data-lucide="user-plus" class="w-3 h-3"></i> Undang</button>
+                            <button onclick="addPatunganContribution(${p.id})" class="bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase w-full shadow-sm active:scale-95 transition-all flex items-center justify-center gap-1">Tambah</button>
+                        </div>
+                    </div>
+                    ${progressHtml}
+                    <div class="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-2xl">${hist || '<p class="text-[10px] text-slate-400 italic text-center">Belum ada kontribusi</p>'}</div>
+                    <div class="flex justify-between items-center"><span class="text-[10px] font-bold text-slate-400 tracking-wider">TERKUMPUL</span><span class="font-bold text-lg text-emerald-500">Rp ${p.collected.toLocaleString('id-ID')}</span></div>
+                </div>`;
+            });
+            lucide.createIcons();
         }
-        function deleteGoalHistoryDetail() {
-            if(!currentGoalId || !currentGoalHistoryId) return;
-            if(confirm("Apakah Anda yakin ingin menghapus setoran ini?")) {
-                let g = db.goals.find(x => x.id === currentGoalId);
-                if(g) { g.targetHistory = g.targetHistory.filter(x => x.id !== currentGoalHistoryId); g.saved = g.targetHistory.reduce((s, p) => s + p.amount, 0); save(); renderGoals(); closeGoalHistoryDetail(); }
+        
+        // FUNGSI INI DITAMBAHKAN AGAR FITUR EDIT DAN HAPUS PATUNGAN BISA BEKERJA
+        async function editPatungan(id) {
+            let p = db.patungan.find(x => x.id === id);
+            if (!p) return;
+            
+            let newName = await appPrompt("Ubah Nama Kartu Patungan:", p.name, false);
+            if (newName) p.name = newName;
+            
+            if (p.target > 0) {
+                let newTarget = await appPrompt("Ubah Target Dana (Rp):", p.target, true);
+                if (newTarget) p.target = parseInt(newTarget.replace(/\D/g, ''));
+            }
+            
+            save();
+            renderPatungan();
+        }
+
+        async function deletePatungan(id) {
+            const confirmDel = await appConfirm('Hapus kartu patungan ini secara permanen?');
+            if (confirmDel) {
+                db.patungan = db.patungan.filter(x => x.id !== id);
+                save();
+                renderPatungan();
             }
         }
 
-        // --- DETIL CICILAN HUTANG ---
-        let currentDebtId = null, currentDebtPaymentId = null;
-        function openDebtHistoryDetail(debtId, paymentId) {
-            let d = db.debts.find(x => x.id === debtId); if(!d) return;
-            let p = d.payments.find(x => x.id === paymentId); if(!p) return;
-            currentDebtId = debtId; currentDebtPaymentId = paymentId;
-            document.getElementById('dtl-debt-amt').value = new Intl.NumberFormat('id-ID').format(p.amount);
-            document.getElementById('dtl-debt-date').value = p.date;
-            document.getElementById('debt-detail-modal').classList.remove('hidden');
-        }
-        function closeDebtHistoryDetail() { document.getElementById('debt-detail-modal').classList.add('hidden'); currentDebtId = null; currentDebtPaymentId = null; }
-        function saveDebtHistoryDetail() {
-            if(!currentDebtId || !currentDebtPaymentId) return;
-            const amtStr = document.getElementById('dtl-debt-amt').value.replace(/\D/g, ''), newAmt = parseInt(amtStr), newDate = document.getElementById('dtl-debt-date').value.trim();
-            if(!newAmt) return alert("Nominal tidak boleh kosong!");
-            let d = db.debts.find(x => x.id === currentDebtId);
-            if(d) {
-                let p = d.payments.find(x => x.id === currentDebtPaymentId);
-                if(p) {
-                    p.amount = newAmt; p.date = newDate;
-                    let totalPaid = d.payments.reduce((s, x) => s + x.amount, 0);
-                    if (totalPaid >= d.amount) { if (confirm('Cicilan hutang telah lunas! Hapus catatan ini dari daftar utama?')) { db.debts = db.debts.filter(x => x.id !== currentDebtId); } }
-                    save(); renderDebts(); updateUI(); closeDebtHistoryDetail();
-                }
-            }
-        }
-        function deleteDebtHistoryDetail() {
-            if(!currentDebtId || !currentDebtPaymentId) return;
-            if(confirm("Apakah Anda yakin ingin menghapus cicilan ini?")) {
-                let d = db.debts.find(x => x.id === currentDebtId); if(d) { d.payments = d.payments.filter(x => x.id !== currentDebtPaymentId); save(); renderDebts(); updateUI(); closeDebtHistoryDetail(); }
-            }
-        }
-
-        function clearAllData() { 
-            if(confirm('Apakah Anda benar-benar ingin mereset seluruh database? Tindakan ini tidak bisa dibatalkan.')) {
-                let inputPass = prompt("Masukkan Kata Sandi akun Anda untuk mengonfirmasi reset:");
-                if (inputPass === null) return;
-                
-                if (inputPass === db.profile.pass) {
-                    localStorage.clear(); 
-                    alert("Database berhasil direset!");
-                    location.reload(); 
+        async function inviteFriend(id) {
+            let email = await appPrompt("Masukkan Email Teman (Terdaftar di SakuMind):", "", false);
+            if(email && email.includes('@')) {
+                let p = db.patungan.find(x => x.id === id);
+                if(!p.members.includes(email.toLowerCase())) {
+                    p.members.push(email.toLowerCase());
+                    save();
+                    renderPatungan();
+                    appAlert(`Undangan dikirim ke ${email}. Jika valid, data akan tersinkron otomatis untuk pengguna tersebut.`);
                 } else {
-                    alert("Kata sandi salah! Reset database digagalkan.");
+                    appAlert("Email sudah menjadi anggota dalam kartu patungan ini.");
                 }
-            } 
+            } else if (email) {
+                appAlert("Format email tidak valid.");
+            }
         }
+
+        async function addPatunganContribution(id) {
+            let pVal = await appPrompt("Nominal Kontribusi:", "", true);
+            let v = parseInt((pVal || "").replace(/\D/g, ''));
+            if(v > 0) {
+                let p = db.patungan.find(x => x.id === id);
+                if(!p.history) p.history = [];
+                p.history.push({ 
+                    id: Date.now(), 
+                    amount: v, 
+                    date: new Date().toLocaleDateString('id-ID'), 
+                    sender: db.profile.name || "Saya" 
+                });
+                p.collected = p.history.reduce((s, x) => s + x.amount, 0);
+                save();
+                renderPatungan();
+            }
+        }
+
+        let curPId = null, curPHId = null;
+        function openPatunganHistoryDetail(pid, hid) {
+            const p = db.patungan.find(x => x.id === pid), h = p.history.find(x => x.id === hid);
+            curPId = pid; curPHId = hid;
+            document.getElementById('dtl-patungan-amt').value = new Intl.NumberFormat('id-ID').format(h.amount);
+            document.getElementById('dtl-patungan-date').value = h.date;
+            document.getElementById('patungan-detail-modal').classList.remove('hidden');
+        }
+        function closePatunganHistoryDetail() { document.getElementById('patungan-detail-modal').classList.add('hidden'); }
+        
+        function savePatunganHistoryDetail() {
+            const p = db.patungan.find(x => x.id === curPId), h = p.history.find(x => x.id === curPHId);
+            h.amount = parseInt(document.getElementById('dtl-patungan-amt').value.replace(/\D/g, ''));
+            h.date = document.getElementById('dtl-patungan-date').value;
+            p.collected = p.history.reduce((s,x)=>s+x.amount,0);
+            save(); renderPatungan(); closePatunganHistoryDetail();
+        }
+        
+        async function deletePatunganHistoryDetail() {
+            const confirmDel = await appConfirm("Hapus riwayat kontribusi ini?");
+            if(confirmDel) {
+                const p = db.patungan.find(x => x.id === curPId);
+                p.history = p.history.filter(x => x.id !== curPHId);
+                p.collected = p.history.reduce((s,x)=>s+x.amount,0);
+                save(); renderPatungan(); closePatunganHistoryDetail();
+            }
+        }
+
+        // --- AUTH ---
+        function setAuthMode(mode) {
+            currentAuthMode = mode;
+            const reg = document.getElementById('reg-fields'), t = document.getElementById('authFormTitle'), sub = document.getElementById('authSubTitle'), b = document.getElementById('btnText'), sw = document.getElementById('switchAuthBtn');
+            if (mode === 'login') { t.innerText = "Selamat Datang"; sub.innerText = "Masuk ke Akun Anda"; reg.classList.add('hidden'); b.innerText = "Masuk (Login)"; sw.innerText = "Daftar sekarang"; }
+            else { t.innerText = "Daftar Baru"; sub.innerText = "Buat Akun Anda"; reg.classList.remove('hidden'); b.innerText = "Daftar"; sw.innerText = "Masuk disini"; }
+        }
+        function toggleAuthMode() { setAuthMode(currentAuthMode === 'login' ? 'register' : 'login'); }
+        document.getElementById('authForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('authBtn'), loader = document.getElementById('btnLoader');
+            btn.disabled = true; loader.classList.remove('hidden');
+            const email = document.getElementById('prof-email').value, password = document.getElementById('prof-pass').value;
+            const params = new URLSearchParams(); params.append('action', currentAuthMode); params.append('email', email); params.append('password', password);
+            try {
+                const response = await fetch(`${APPS_SCRIPT_URL}?${params.toString()}`, { method: 'GET' });
+                const result = await response.json();
+                if (result.status === 'success') {
+                    if (currentAuthMode === 'login') { db.profile = { name: result.user.name, email: result.user.email, pass: password, isLoggedIn: true }; if (result.data) { if (result.data.txs) db.txs = result.data.txs; if (result.data.goals) db.goals = result.data.goals; if (result.data.debts) db.debts = result.data.debts; if (result.data.patungan) db.patungan = result.data.patungan; } save(); updateUI(); switchTab('input'); }
+                    else { await appAlert(result.message); toggleAuthMode(); }
+                } else await appAlert(result.message);
+            } catch (error) { db.profile = { name: email.split('@')[0], email: email, pass: password, isLoggedIn: true }; save(); updateUI(); switchTab('input'); }
+            finally { btn.disabled = false; loader.classList.add('hidden'); }
+        });
+        async function handleLogout() { 
+            const confirmOut = await appConfirm('Apakah Anda yakin ingin keluar dari akun?');
+            if (confirmOut) { db.profile = { name: '', email: '', pass: '', isLoggedIn: false }; db.txs = []; db.goals = []; db.debts = []; db.patungan = []; save(); location.reload(); }
+        }
+
+        // --- OTHER MODAL ACTIONS ---
+        let currentDetailId = null;
+        function openTxDetail(id) { const tx = db.txs.find(t => t.id === id); if (!tx) return; currentDetailId = id; document.getElementById('dtl-amt').value = new Intl.NumberFormat('id-ID').format(tx.amount); document.getElementById('dtl-subcat').value = tx.subcat; document.getElementById('dtl-date').value = tx.date; document.getElementById('tx-detail-modal').classList.remove('hidden'); }
+        function closeTxDetail() { document.getElementById('tx-detail-modal').classList.add('hidden'); }
+        function saveTxDetail() { if (!currentDetailId) return; const tx = db.txs.find(t => t.id === currentDetailId); tx.amount = parseInt(document.getElementById('dtl-amt').value.replace(/\D/g, '')); tx.subcat = document.getElementById('dtl-subcat').value; tx.date = document.getElementById('dtl-date').value; save(); renderHistory(); updateUI(); closeTxDetail(); }
+        async function deleteTxDetail() { 
+            const confirmDel = await appConfirm("Hapus riwayat transaksi ini?");
+            if (confirmDel) { db.txs = db.txs.filter(x => x.id !== currentDetailId); save(); renderHistory(); updateUI(); closeTxDetail(); } 
+        }
+
+        let curGId = null, curGHId = null;
+        function openGoalHistoryDetail(gid, hid) { const g = db.goals.find(x => x.id === gid), h = g.targetHistory.find(x => x.id === hid); curGId = gid; curGHId = hid; document.getElementById('dtl-goal-amt').value = new Intl.NumberFormat('id-ID').format(h.amount); document.getElementById('dtl-goal-date').value = h.date; document.getElementById('goal-detail-modal').classList.remove('hidden'); }
+        function closeGoalHistoryDetail() { document.getElementById('goal-detail-modal').classList.add('hidden'); }
+        function saveGoalHistoryDetail() { const g = db.goals.find(x => x.id === curGId), h = g.targetHistory.find(x => x.id === curGHId); h.amount = parseInt(document.getElementById('dtl-goal-amt').value.replace(/\D/g, '')); h.date = document.getElementById('dtl-goal-date').value; g.saved = g.targetHistory.reduce((s,p)=>s+p.amount,0); save(); renderGoals(); closeGoalHistoryDetail(); }
+        async function deleteGoalHistoryDetail() { 
+            const confirmDel = await appConfirm("Hapus riwayat setoran tabungan ini?");
+            if(confirmDel) { const g = db.goals.find(x => x.id === curGId); g.targetHistory = g.targetHistory.filter(x => x.id !== curGHId); g.saved = g.targetHistory.reduce((s,p)=>s+p.amount,0); save(); renderGoals(); closeGoalHistoryDetail(); } 
+        }
+
+        let curDId = null, curDPId = null;
+        function openDebtHistoryDetail(did, pid) { const d = db.debts.find(x => x.id === did), p = d.payments.find(x => x.id === pid); curDId = did; curDPId = pid; document.getElementById('dtl-debt-amt').value = new Intl.NumberFormat('id-ID').format(p.amount); document.getElementById('dtl-debt-date').value = p.date; document.getElementById('debt-detail-modal').classList.remove('hidden'); }
+        function closeDebtHistoryDetail() { document.getElementById('debt-detail-modal').classList.add('hidden'); }
+        function saveDebtHistoryDetail() { const d = db.debts.find(x => x.id === curDId), p = d.payments.find(x => x.id === curDPId); p.amount = parseInt(document.getElementById('dtl-debt-amt').value.replace(/\D/g, '')); p.date = document.getElementById('dtl-debt-date').value; save(); renderDebts(); updateUI(); closeDebtHistoryDetail(); }
+        async function deleteDebtHistoryDetail() { 
+            const confirmDel = await appConfirm("Hapus riwayat riet pembayaran ini?");
+            if(confirmDel) { const d = db.debts.find(x => x.id === curDId); d.payments = d.payments.filter(x => x.id !== curDPId); save(); renderDebts(); updateUI(); closeDebtHistoryDetail(); } 
+        }
+
+        function parseLocalDateString(s) { const p = s.split('/'); return new Date(p[2], p[1]-1, p[0]); } 
+        
     </script>
 </body>
 </html>
